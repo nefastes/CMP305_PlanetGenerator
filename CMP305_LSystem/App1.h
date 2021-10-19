@@ -34,6 +34,7 @@ private:
 
 	unique_ptr<Light>		light;
 	LSystem					lSystem;
+	int						lSystem_nIterations;
 };
 
 #endif

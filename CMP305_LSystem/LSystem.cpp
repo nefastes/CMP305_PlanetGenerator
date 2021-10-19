@@ -1,24 +1,29 @@
 #include "LSystem.h"
 
-LSystem::LSystem(string Axiom) :
+LSystem::LSystem(std::string Axiom) :
 	m_Axiom(Axiom), m_CurrentSystem(Axiom)
 {
 }
 
-void LSystem::Run(const int count) {
+void LSystem::Run(const unsigned count) {
 	Reset();
-	for (int i = 0; i < count; i++) {
-		Iterate();
-	}
+	for (unsigned i = 0u; i < count; i++) Iterate();
 }
 
-void LSystem::AddRule(char predecessor, string successor) {
+void LSystem::AddRule(char predecessor, const std::string& successor) {
+	m_rules.emplace(predecessor, successor);
 }
 
 void LSystem::Iterate() {
-	
+	std::string iteration("");
+	for (auto it : m_CurrentSystem)
+	{
+		std::string current = m_rules.at(it);
+		iteration.append(current);
+	}
+	m_CurrentSystem.assign(iteration);
 }
 
 void LSystem::Reset() {
-	m_CurrentSystem = m_Axiom;
+	m_CurrentSystem.assign(m_Axiom);
 }

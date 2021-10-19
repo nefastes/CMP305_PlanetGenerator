@@ -3,7 +3,8 @@
 #include "App1.h"
 #include <stack>
 App1::App1() :
-	lSystem("A")
+	lSystem("A"),
+	lSystem_nIterations(1)
 {
 }
 
@@ -25,6 +26,10 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	camera->setPosition(0.0f, 1.0f, -3.0f);
 	camera->setRotation(0.0f, 0.0f, 00.0f);
+
+	//Add rules to the Lsystem
+	lSystem.AddRule('A', "AB");
+	lSystem.AddRule('B', "A");
 
 	//Build the line
 	BuildLine2D();
@@ -97,6 +102,10 @@ void App1::gui()
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
 
 	ImGui::LabelText("L-System", "");
+
+	ImGui::SliderInt("nIterations", &lSystem_nIterations, 1, 100);
+	if (ImGui::Button("Iterate"))
+		lSystem.Run((unsigned)lSystem_nIterations);
 
 	ImGui::LabelText(lSystem.GetAxiom().c_str(), "Axiom:");
 
