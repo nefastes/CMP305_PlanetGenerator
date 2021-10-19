@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>D:\Work\Abertay\CMP305\05_Growth\CMP305_LSystem_ExampleCode\CMP305_LSystem\x64\Debug\CMP305_LSystem.exe</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>D:\Work\Abertay\CMP305\05_Growth\CMP305_LSystem_ExampleCode\CMP305_LSystem\CMP305_LSystem\light_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>D:\Work\Abertay\CMP305\05_Growth\CMP305_LSystem_ExampleCode\CMP305_LSystem\CMP305_LSystem\light_vs.cso</FullPath>
+    </ContentFile>
+  </ContentFiles>
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>

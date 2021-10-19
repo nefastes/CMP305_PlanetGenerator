@@ -1,0 +1,18 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(467,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (CMP305_Base.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  compilation object save succeeded; see D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_Base\CMP305_Base\light_ps.cso
+  compilation object save succeeded; see D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_Base\CMP305_Base\light_vs.cso
+  App1.cpp
+D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_Base\CMP305_Base\LineMesh.h(28,22): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  LightShader.cpp
+  LineMesh.cpp
+D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_Base\CMP305_Base\LineMesh.h(28,22): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_Base\CMP305_Base\LineMesh.cpp(23,37): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_Base\CMP305_Base\LineMesh.cpp(24,36): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  LSystem.cpp
+  Main.cpp
+D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_Base\CMP305_Base\LineMesh.h(28,22): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  Generating Code...
+DXFramework.lib(WICTextureLoader.obj) : warning LNK4099: PDB 'DirectXTK.pdb' was not found with 'DXFramework.lib(WICTextureLoader.obj)' or at 'D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_Base\x64\Debug\DirectXTK.pdb'; linking object as if no debug info
+DXFramework.lib(pch.obj) : warning LNK4099: PDB 'DirectXTK.pdb' was not found with 'DXFramework.lib(pch.obj)' or at 'D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_Base\x64\Debug\DirectXTK.pdb'; linking object as if no debug info
+DXFramework.lib(DDSTextureLoader.obj) : warning LNK4099: PDB 'DirectXTK.pdb' was not found with 'DXFramework.lib(DDSTextureLoader.obj)' or at 'D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_Base\x64\Debug\DirectXTK.pdb'; linking object as if no debug info
+  CMP305_Base.vcxproj -> D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_Base\x64\Debug\CMP305_LSystem.exe
