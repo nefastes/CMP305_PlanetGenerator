@@ -27,14 +27,25 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	camera->setPosition(0.0f, 1.0f, -3.0f);
 	camera->setRotation(0.0f, 0.0f, 00.0f);
 
-	//Add rules to the Lsystem
+	////Add rules to the Lsystem
 	//Below to test lSystem
 	//lSystem.AddRule('A', "AB");
 	//lSystem.AddRule('B', "A");
-	lSystem.AddRule('B', "BB");
+
+	//Branching binary tree
+	/*lSystem.AddRule('B', "BB");
 	lSystem.AddRule('A', "B[A]A");
 	lSystem.AddRule('[', "[");
+	lSystem.AddRule(']', "]");*/
+
+	//3D tree
+	lSystem.AddRule('A', "[&FA][&<FA][&>FA]");
+	lSystem.AddRule('F', "F");
+	lSystem.AddRule('[', "[");
 	lSystem.AddRule(']', "]");
+	lSystem.AddRule('&', "&");
+	lSystem.AddRule('>', ">");
+	lSystem.AddRule('<', "<");
 
 	//Build the line
 	BuildLine2D();
@@ -130,40 +141,71 @@ void App1::BuildLine2D()
 	//Clear any lines we might already have
 	m_Line->Clear();
 
+	lSystem.SetAxiom("FA");
+
 	//Get the current L-System string, right now we have a place holder
 	std::string systemString = lSystem.GetCurrentSystem();
 
 	//Initialise some variables
 	XMVECTOR pos = XMVectorReplicate(0.0f);	//Current position (0,0,0)
-	XMVECTOR dir = XMVectorSet(0, .0125f, 0, 1);	//Current direction is "Up"
+	XMVECTOR dir = XMVectorSet(0, 1, 0, 1);	//Current direction is "Up"
 	XMVECTOR fwd = XMVectorSet(0, 0, 1, 1);	//Rotation axis. Our rotations happen around the "forward" vector
 	XMMATRIX currentRotation = XMMatrixRotationRollPitchYaw(0, 0, 0);
 	std::vector<XMMATRIX> rotation_stack;
 	std::vector<XMVECTOR> pos_stack;
 
 	//Go through the L-System string
+	//Binary tree
+	//for (int i = 0; i < systemString.length(); i++) {
+	//	switch (systemString[i]) {			
+	//		case 'A':	//Draw a line segment
+	//			m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
+	//			//TODO: draw leaf
+	//			break;			
+	//		case 'B':	//Draw a line segment and move forward
+	//			m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
+	//			pos += XMVector3Transform(dir, currentRotation);						//Move the position marker
+	//			break;
+	//		case '[':
+	//			pos_stack.push_back(pos);
+	//			rotation_stack.push_back(currentRotation);
+	//			currentRotation *= XMMatrixRotationAxis(fwd, AI_DEG_TO_RAD(45.0f));
+	//			break;
+	//		case ']':
+	//			pos = pos_stack.back();
+	//			pos_stack.pop_back();
+	//			currentRotation = rotation_stack.back();
+	//			rotation_stack.pop_back();
+	//			currentRotation *= XMMatrixRotationAxis(fwd, AI_DEG_TO_RAD(-45.0f));
+	//			break;
+	//	}
+	//}
+	//3D tree
 	for (int i = 0; i < systemString.length(); i++) {
-		switch (systemString[i]) {			
-			case 'A':	//Draw a line segment
-				m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
-				//TODO: draw leaf
-				break;			
-			case 'B':	//Draw a line segment and move forward
-				m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
-				pos += XMVector3Transform(dir, currentRotation);						//Move the position marker
-				break;
-			case '[':
-				pos_stack.push_back(pos);
-				rotation_stack.push_back(currentRotation);
-				currentRotation *= XMMatrixRotationAxis(fwd, AI_DEG_TO_RAD(45.0f));
-				break;
-			case ']':
-				pos = pos_stack.back();
-				pos_stack.pop_back();
-				currentRotation = rotation_stack.back();
-				rotation_stack.pop_back();
-				currentRotation *= XMMatrixRotationAxis(fwd, AI_DEG_TO_RAD(-45.0f));
-				break;
+		switch (systemString[i]) {
+		case 'F':	//Draw a line segment and move forward
+			m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
+			pos += XMVector3Transform(dir, currentRotation);						//Move the position marker
+			break;
+		case '[':
+			pos_stack.push_back(pos);
+			rotation_stack.push_back(currentRotation);
+			break;
+		case ']':
+			pos = pos_stack.back();
+			pos_stack.pop_back();
+			currentRotation = rotation_stack.back();
+			rotation_stack.pop_back();
+			break;
+		case '&':
+			currentRotation *= XMMatrixRotationRollPitchYaw(45.f, 0.f, 0.f);
+			break;
+		case '<':
+			currentRotation *= XMMatrixRotationRollPitchYaw(0.f, 0.f, 45.f);
+			break;
+		case '>':
+			currentRotation *= XMMatrixRotationRollPitchYaw(0.f, 0.f, -45.f);
+			break;
 		}
 	}
 	//Build the vertices
