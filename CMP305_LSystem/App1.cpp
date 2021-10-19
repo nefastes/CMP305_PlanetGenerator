@@ -28,8 +28,13 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	camera->setRotation(0.0f, 0.0f, 00.0f);
 
 	//Add rules to the Lsystem
-	lSystem.AddRule('A', "AB");
-	lSystem.AddRule('B', "A");
+	//Below to test lSystem
+	//lSystem.AddRule('A', "AB");
+	//lSystem.AddRule('B', "A");
+	lSystem.AddRule('B', "BB");
+	lSystem.AddRule('A', "B[A]A");
+	lSystem.AddRule('[', "[");
+	lSystem.AddRule(']', "]");
 
 	//Build the line
 	BuildLine2D();
@@ -103,9 +108,12 @@ void App1::gui()
 
 	ImGui::LabelText("L-System", "");
 
-	ImGui::SliderInt("nIterations", &lSystem_nIterations, 1, 100);
-	if (ImGui::Button("Iterate"))
+	ImGui::SliderInt("nIterations", &lSystem_nIterations, 1, 15);
+	if (ImGui::Button("Run System"))
+	{
 		lSystem.Run((unsigned)lSystem_nIterations);
+		BuildLine2D();
+	}
 
 	ImGui::LabelText(lSystem.GetAxiom().c_str(), "Axiom:");
 
@@ -123,23 +131,38 @@ void App1::BuildLine2D()
 	m_Line->Clear();
 
 	//Get the current L-System string, right now we have a place holder
-	std::string systemString = "ABABABBABABA";
+	std::string systemString = lSystem.GetCurrentSystem();
 
 	//Initialise some variables
 	XMVECTOR pos = XMVectorReplicate(0.0f);	//Current position (0,0,0)
-	XMVECTOR dir = XMVectorSet(0, 1, 0, 1);	//Current direction is "Up"
+	XMVECTOR dir = XMVectorSet(0, .0125f, 0, 1);	//Current direction is "Up"
 	XMVECTOR fwd = XMVectorSet(0, 0, 1, 1);	//Rotation axis. Our rotations happen around the "forward" vector
 	XMMATRIX currentRotation = XMMatrixRotationRollPitchYaw(0, 0, 0);
+	std::vector<XMMATRIX> rotation_stack;
+	std::vector<XMVECTOR> pos_stack;
 
 	//Go through the L-System string
 	for (int i = 0; i < systemString.length(); i++) {
 		switch (systemString[i]) {			
-			case 'A':	//If it's A, make a line
+			case 'A':	//Draw a line segment
+				m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
+				//TODO: draw leaf
+				break;			
+			case 'B':	//Draw a line segment and move forward
 				m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
 				pos += XMVector3Transform(dir, currentRotation);						//Move the position marker
-				break;			
-			case 'B':	//If it's B, rotate
+				break;
+			case '[':
+				pos_stack.push_back(pos);
+				rotation_stack.push_back(currentRotation);
 				currentRotation *= XMMatrixRotationAxis(fwd, AI_DEG_TO_RAD(45.0f));
+				break;
+			case ']':
+				pos = pos_stack.back();
+				pos_stack.pop_back();
+				currentRotation = rotation_stack.back();
+				rotation_stack.pop_back();
+				currentRotation *= XMMatrixRotationAxis(fwd, AI_DEG_TO_RAD(-45.0f));
 				break;
 		}
 	}

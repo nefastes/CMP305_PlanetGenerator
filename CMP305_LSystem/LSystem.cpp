@@ -15,13 +15,13 @@ void LSystem::AddRule(char predecessor, const std::string& successor) {
 }
 
 void LSystem::Iterate() {
-	std::string iteration("");
+	std::string newSystem("");
 	for (auto it : m_CurrentSystem)
 	{
-		std::string current = m_rules.at(it);
-		iteration.append(current);
+		std::string successor = m_rules.at(it);	//m_CurrentSystem[i]
+		newSystem.append(successor);
 	}
-	m_CurrentSystem.assign(iteration);
+	m_CurrentSystem.assign(newSystem);
 }
 
 void LSystem::Reset() {
