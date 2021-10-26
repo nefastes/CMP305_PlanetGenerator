@@ -4,7 +4,8 @@
 #include <stack>
 App1::App1() :
 	lSystem("A"),
-	lSystem_nIterations(1)
+	lSystem_nIterations(1),
+	lSystem_Build2D(false)
 {
 }
 
@@ -32,13 +33,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	//lSystem.AddRule('A', "AB");
 	//lSystem.AddRule('B', "A");
 
-	//Branching binary tree
-	/*lSystem.AddRule('B', "BB");
-	lSystem.AddRule('A', "B[A]A");
-	lSystem.AddRule('[', "[");
-	lSystem.AddRule(']', "]");*/
-
-	//3D tree
+	//Rules
 	lSystem.AddRule('A', "[&FA][&<FA][&>FA]");
 	lSystem.AddRule('F', "F");
 	lSystem.AddRule('[', "[");
@@ -48,7 +43,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	lSystem.AddRule('<', "<");
 
 	//Build the line
-	BuildLine2D();
+	//BuildLine2D();
 }
 
 App1::~App1()
@@ -120,10 +115,39 @@ void App1::gui()
 	ImGui::LabelText("L-System", "");
 
 	ImGui::SliderInt("nIterations", &lSystem_nIterations, 1, 15);
+	//if (ImGui::RadioButton("2D Tree", &lSystem_Build2D))
+	//{
+	//	//Branching binary tree rules
+	//	lSystem.AddRule('B', "BB");
+	//	lSystem.AddRule('A', "B[A]A");
+	//	lSystem.AddRule('[', "[");
+	//	lSystem.AddRule(']', "]");
+	//}
+	//ImGui::SameLine();
+	//if (ImGui::RadioButton("3D Tree", &lSystem_Build2D))
+	//{
+	//	lSystem.AddRule('A', "[&FA][&<FA][&>FA]");
+	//	lSystem.AddRule('F', "F");
+	//	lSystem.AddRule('[', "[");
+	//	lSystem.AddRule(']', "]");
+	//	lSystem.AddRule('&', "&");
+	//	lSystem.AddRule('>', ">");
+	//	lSystem.AddRule('<', "<");
+	//}
 	if (ImGui::Button("Run System"))
 	{
-		lSystem.Run((unsigned)lSystem_nIterations);
-		BuildLine2D();
+		if (lSystem_Build2D)
+		{
+			lSystem.SetAxiom("A");
+			lSystem.Run((unsigned)lSystem_nIterations);
+			BuildLine2D();
+		}
+		else
+		{
+			lSystem.SetAxiom("FA");
+			lSystem.Run((unsigned)lSystem_nIterations);
+			BuildTree3D();
+		}
 	}
 
 	ImGui::LabelText(lSystem.GetAxiom().c_str(), "Axiom:");
@@ -141,8 +165,6 @@ void App1::BuildLine2D()
 	//Clear any lines we might already have
 	m_Line->Clear();
 
-	lSystem.SetAxiom("FA");
-
 	//Get the current L-System string, right now we have a place holder
 	std::string systemString = lSystem.GetCurrentSystem();
 
@@ -155,56 +177,91 @@ void App1::BuildLine2D()
 	std::vector<XMVECTOR> pos_stack;
 
 	//Go through the L-System string
-	//Binary tree
-	//for (int i = 0; i < systemString.length(); i++) {
-	//	switch (systemString[i]) {			
-	//		case 'A':	//Draw a line segment
-	//			m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
-	//			//TODO: draw leaf
-	//			break;			
-	//		case 'B':	//Draw a line segment and move forward
-	//			m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
-	//			pos += XMVector3Transform(dir, currentRotation);						//Move the position marker
-	//			break;
-	//		case '[':
-	//			pos_stack.push_back(pos);
-	//			rotation_stack.push_back(currentRotation);
-	//			currentRotation *= XMMatrixRotationAxis(fwd, AI_DEG_TO_RAD(45.0f));
-	//			break;
-	//		case ']':
-	//			pos = pos_stack.back();
-	//			pos_stack.pop_back();
-	//			currentRotation = rotation_stack.back();
-	//			rotation_stack.pop_back();
-	//			currentRotation *= XMMatrixRotationAxis(fwd, AI_DEG_TO_RAD(-45.0f));
-	//			break;
-	//	}
-	//}
-	//3D tree
+	for (int i = 0; i < systemString.length(); i++) {
+		switch (systemString[i]) {			
+			case 'A':	//Draw a line segment
+				m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
+				//TODO: draw leaf
+				break;			
+			case 'B':	//Draw a line segment and move forward
+				m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
+				pos += XMVector3Transform(dir, currentRotation);						//Move the position marker
+				break;
+			case '[':
+				pos_stack.push_back(pos);
+				rotation_stack.push_back(currentRotation);
+				currentRotation *= XMMatrixRotationAxis(fwd, AI_DEG_TO_RAD(45.0f));
+				break;
+			case ']':
+				pos = pos_stack.back();
+				pos_stack.pop_back();
+				currentRotation = rotation_stack.back();
+				rotation_stack.pop_back();
+				currentRotation *= XMMatrixRotationAxis(fwd, AI_DEG_TO_RAD(-45.0f));
+				break;
+		}
+	}
+	
+	//Build the vertices
+	m_Line->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
+}
+
+void App1::BuildTree3D()
+{
+	//Clear any lines we might already have
+	m_Line->Clear();
+
+	//Get the current L-System string, right now we have a place holder
+	std::string systemString = lSystem.GetCurrentSystem();
+
+	//Initialise some variables
+	XMVECTOR pos = XMVectorReplicate(0.0f);	//Current position (0,0,0)
+	XMVECTOR dir = XMVectorSet(0, 1, 0, 1);	//Current direction is "Up"
+	XMVECTOR z_axis = XMVectorSet(0, 0, 1, 1);	//Rotation axis.
+	XMVECTOR y_axis = XMVectorSet(0, 1, 0, 1);	//Rotation axis.
+	XMVECTOR x_axis = XMVectorSet(1, 0, 0, 1);	//Rotation axis.
+	XMMATRIX currentRotation = XMMatrixRotationRollPitchYaw(0, 0, 0);
+	std::vector<XMMATRIX> rotation_stack;
+	std::vector<XMVECTOR> pos_stack;
+	float rng;
+
+	//Build 3D tree
 	for (int i = 0; i < systemString.length(); i++) {
 		switch (systemString[i]) {
 		case 'F':	//Draw a line segment and move forward
 			m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
-			pos += XMVector3Transform(dir, currentRotation);						//Move the position marker
+			pos += XMVector3Transform(dir, currentRotation);							//Move the position marker
 			break;
 		case '[':
 			pos_stack.push_back(pos);
 			rotation_stack.push_back(currentRotation);
+			dir /= XMVectorSet(1.5f, 1.5f, 1.5f, 1.f);
 			break;
 		case ']':
 			pos = pos_stack.back();
 			pos_stack.pop_back();
 			currentRotation = rotation_stack.back();
 			rotation_stack.pop_back();
+			dir *= XMVectorSet(1.5f, 1.5f, 1.5f, 1.f);
 			break;
 		case '&':
-			currentRotation *= XMMatrixRotationRollPitchYaw(45.f, 0.f, 0.f);
+			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
+			//rng = 3.1415f * 45.f / 180.f;
+			currentRotation *= XMMatrixRotationAxis(z_axis, rng);
 			break;
 		case '<':
-			currentRotation *= XMMatrixRotationRollPitchYaw(0.f, 0.f, 45.f);
+			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
+			//rng = 3.1415f * 120.f / 180.f;
+			currentRotation *= XMMatrixRotationAxis(y_axis, rng);
 			break;
 		case '>':
-			currentRotation *= XMMatrixRotationRollPitchYaw(0.f, 0.f, -45.f);
+			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
+			//rng = 3.1415f * -60.f / 180.f;
+			currentRotation *= XMMatrixRotationAxis(y_axis, rng);
+			break;
+		case 'A':
+			break;
+		default:
 			break;
 		}
 	}

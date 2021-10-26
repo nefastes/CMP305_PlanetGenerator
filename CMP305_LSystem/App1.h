@@ -26,6 +26,7 @@ protected:
 
 private:
 	void BuildLine2D();
+	void BuildTree3D();
 	void CleanSystem();
 	float Rand() { return (float)rand() / RAND_MAX; }
 
@@ -35,6 +36,7 @@ private:
 	unique_ptr<Light>		light;
 	LSystem					lSystem;
 	int						lSystem_nIterations;
+	bool					lSystem_Build2D;
 };
 
 #endif
