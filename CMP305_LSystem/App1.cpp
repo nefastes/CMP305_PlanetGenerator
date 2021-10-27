@@ -5,7 +5,7 @@
 App1::App1() :
 	lSystem("A"),
 	lSystem_nIterations(1),
-	lSystem_Build2D(false)
+	lSystem_BuildType(0)
 {
 }
 
@@ -33,14 +33,11 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	//lSystem.AddRule('A', "AB");
 	//lSystem.AddRule('B', "A");
 
-	//Rules
-	lSystem.AddRule('A', "[&FA][&<FA][&>FA]");
-	lSystem.AddRule('F', "F");
+	//The application starts with the 2D tree rules
+	lSystem.AddRule('B', "BB");
+	lSystem.AddRule('A', "B[A]A");
 	lSystem.AddRule('[', "[");
 	lSystem.AddRule(']', "]");
-	lSystem.AddRule('&', "&");
-	lSystem.AddRule('>', ">");
-	lSystem.AddRule('<', "<");
 
 	//Build the line
 	//BuildLine2D();
@@ -115,36 +112,39 @@ void App1::gui()
 	ImGui::LabelText("L-System", "");
 
 	ImGui::SliderInt("nIterations", &lSystem_nIterations, 1, 15);
-	//if (ImGui::RadioButton("2D Tree", &lSystem_Build2D))
-	//{
-	//	//Branching binary tree rules
-	//	lSystem.AddRule('B', "BB");
-	//	lSystem.AddRule('A', "B[A]A");
-	//	lSystem.AddRule('[', "[");
-	//	lSystem.AddRule(']', "]");
-	//}
-	//ImGui::SameLine();
-	//if (ImGui::RadioButton("3D Tree", &lSystem_Build2D))
-	//{
-	//	lSystem.AddRule('A', "[&FA][&<FA][&>FA]");
-	//	lSystem.AddRule('F', "F");
-	//	lSystem.AddRule('[', "[");
-	//	lSystem.AddRule(']', "]");
-	//	lSystem.AddRule('&', "&");
-	//	lSystem.AddRule('>', ">");
-	//	lSystem.AddRule('<', "<");
-	//}
+	if (ImGui::RadioButton("2D Tree", &lSystem_BuildType, 0))
+	{
+		lSystem.SetAxiom("A");
+		//Branching binary tree rules from lab sheet
+		lSystem.ClearRules();
+		lSystem.AddRule('B', "BB");
+		lSystem.AddRule('A', "B[A]A");
+		lSystem.AddRule('[', "[");
+		lSystem.AddRule(']', "]");
+	}
+	ImGui::SameLine();
+	if (ImGui::RadioButton("3D Tree", &lSystem_BuildType, 1))
+	{
+		lSystem.SetAxiom("FA");
+		//3D tree rules from lab sheet
+		lSystem.ClearRules();
+		lSystem.AddRule('A', "[&FA][&<FA][&>FA]");
+		lSystem.AddRule('F', "F");
+		lSystem.AddRule('[', "[");
+		lSystem.AddRule(']', "]");
+		lSystem.AddRule('&', "&");
+		lSystem.AddRule('>', ">");
+		lSystem.AddRule('<', "<");
+	}
 	if (ImGui::Button("Run System"))
 	{
-		if (lSystem_Build2D)
+		if (lSystem_BuildType == 0)
 		{
-			lSystem.SetAxiom("A");
 			lSystem.Run((unsigned)lSystem_nIterations);
 			BuildLine2D();
 		}
 		else
 		{
-			lSystem.SetAxiom("FA");
 			lSystem.Run((unsigned)lSystem_nIterations);
 			BuildTree3D();
 		}
@@ -245,19 +245,22 @@ void App1::BuildTree3D()
 			dir *= XMVectorSet(1.5f, 1.5f, 1.5f, 1.f);
 			break;
 		case '&':
-			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
-			//rng = 3.1415f * 45.f / 180.f;
-			currentRotation *= XMMatrixRotationAxis(z_axis, rng);
+			//rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
+			rng = AI_DEG_TO_RAD(20.f);
+			//currentRotation *= XMMatrixRotationAxis(z_axis, rng);
+			currentRotation *= XMMatrixRotationRollPitchYaw(rng, 0.f, 0.f);
 			break;
 		case '<':
-			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
-			//rng = 3.1415f * 120.f / 180.f;
-			currentRotation *= XMMatrixRotationAxis(y_axis, rng);
+			//rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
+			rng = AI_DEG_TO_RAD(120.f);
+			//currentRotation *= XMMatrixRotationAxis(y_axis, rng);
+			currentRotation *= XMMatrixRotationRollPitchYaw(0.f, 0.f, rng);
 			break;
 		case '>':
-			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
-			//rng = 3.1415f * -60.f / 180.f;
-			currentRotation *= XMMatrixRotationAxis(y_axis, rng);
+			//rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
+			rng = AI_DEG_TO_RAD(-120.f);
+			//currentRotation *= XMMatrixRotationAxis(y_axis, rng);
+			currentRotation *= XMMatrixRotationRollPitchYaw(0.f, 0.f, rng);
 			break;
 		case 'A':
 			break;

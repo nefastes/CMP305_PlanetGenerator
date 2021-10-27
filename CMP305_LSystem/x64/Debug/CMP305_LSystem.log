@@ -1,4 +1,4 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(513,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (CMP305_Base.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(467,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (CMP305_Base.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   App1.cpp
-M:\CMP305\LAB5\CMP305_LSystem\LineMesh.h(29,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
-  CMP305_LSystem.vcxproj -> M:\CMP305\LAB5\x64\Debug\CMP305_LSystem.exe
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(29,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
+  CMP305_LSystem.vcxproj -> C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Debug\CMP305_LSystem.exe

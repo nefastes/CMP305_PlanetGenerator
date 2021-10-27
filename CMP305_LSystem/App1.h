@@ -36,7 +36,7 @@ private:
 	unique_ptr<Light>		light;
 	LSystem					lSystem;
 	int						lSystem_nIterations;
-	bool					lSystem_Build2D;
+	int						lSystem_BuildType;
 };
 
 #endif

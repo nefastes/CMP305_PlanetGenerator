@@ -13,6 +13,7 @@ public:
 	inline const std::string GetAxiom() { return m_Axiom; }
 
 
+	void ClearRules();
 	void AddRule(const char, const std::string&);	//Add a rule to the system
 	void Run(const unsigned count);					//Run the system a set number of times
 	void Iterate();									//Apply the rules one time

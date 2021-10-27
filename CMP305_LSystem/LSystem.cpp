@@ -10,6 +10,11 @@ void LSystem::Run(const unsigned count) {
 	for (unsigned i = 0u; i < count; i++) Iterate();
 }
 
+void LSystem::ClearRules()
+{
+	m_rules.clear();
+}
+
 void LSystem::AddRule(char predecessor, const std::string& successor) {
 	m_rules.emplace(predecessor, successor);
 }
