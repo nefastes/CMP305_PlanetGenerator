@@ -5,7 +5,8 @@
 App1::App1() :
 	lSystem("A"),
 	lSystem_nIterations(1),
-	lSystem_BuildType(0)
+	lSystem_BuildType(0),
+	lSystem_UseCylinders(false)
 {
 }
 
@@ -136,6 +137,7 @@ void App1::gui()
 		lSystem.AddRule('>', ">");
 		lSystem.AddRule('<', "<");
 	}
+	ImGui::Checkbox("Use Cylinders", &lSystem_UseCylinders);
 	if (ImGui::Button("Iterate"))
 	{
 		lSystem.Iterate();
@@ -230,19 +232,20 @@ void App1::BuildTree3D()
 		case 'F':	//Draw a line segment and move forward
 			XMVECTOR step = XMVector3Transform(dir, currentRotation);
 			m_Line->AddLine(pos, pos + step);	//Add the line segment to the line mesh
-			pos += step;							//Move the position marker
+			//TODO: ADD A NEW CYLINDER HERE
+			pos += step;						//Move the position marker
 			break;
 		case '[':
 			pos_stack.push_back(pos);
 			rotation_stack.push_back(currentRotation);
-			dir /= XMVectorSet(1.25f, 1.25f, 1.25f, 1.f);
+			dir *= XMVectorSet(.8f, .8f, .8f, 1.f);
 			break;
 		case ']':
 			pos = pos_stack.back();
 			pos_stack.pop_back();
 			currentRotation = rotation_stack.back();
 			rotation_stack.pop_back();
-			dir *= XMVectorSet(1.25f, 1.25f, 1.25f, 1.f);
+			dir /= XMVectorSet(.8f, .8f, .8f, 1.f);
 			break;
 		case '&':
 			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / (3.1415f / 4.f));
@@ -250,12 +253,12 @@ void App1::BuildTree3D()
 			currentRotation *= XMMatrixRotationAxis(XMVector3Transform(fwd, currentRotation), rng);
 			break;
 		case '<':
-			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / (2.f * 3.1415f / 3.f));
+			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
 			//rng = AI_DEG_TO_RAD(120.f);
 			currentRotation *= XMMatrixRotationAxis(XMVector3Transform(dir, currentRotation), rng);
 			break;
 		case '>':
-			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / (2.f * -3.1415f / 3.f));
+			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / -3.1415f);
 			//rng = AI_DEG_TO_RAD(-120.f);
 			currentRotation *= XMMatrixRotationAxis(XMVector3Transform(dir, currentRotation), rng);
 			break;
@@ -265,8 +268,13 @@ void App1::BuildTree3D()
 			break;
 		}
 	}
-	//Build the vertices
-	m_Line->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
+	//Build the vertices if we are rendering lines
+	if (!lSystem_UseCylinders) m_Line->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
+	//If we are rendering cylinders..
+	else
+	{
+
+	}
 }
 
 void App1::CleanSystem()

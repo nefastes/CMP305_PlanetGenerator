@@ -6,8 +6,10 @@
 #include "DXF.h"	// include dxframework
 #include "LightShader.h"
 #include "LineMesh.h"
+#include "CylinderMesh.h"
 #include "LSystem.h"
 #include <memory>
+#include <vector>
 
 using std::unique_ptr;
 
@@ -30,13 +32,15 @@ private:
 	void CleanSystem();
 	float Rand() { return (float)rand() / RAND_MAX; }
 
-	unique_ptr<LightShader>	shader;
-	unique_ptr<LineMesh>	m_Line;
+	unique_ptr<LightShader>					shader;
+	unique_ptr<LineMesh>					m_Line;
+	std::vector<unique_ptr<CylinderMesh>>	m_Cylinders;
 
 	unique_ptr<Light>		light;
 	LSystem					lSystem;
 	int						lSystem_nIterations;
 	int						lSystem_BuildType;
+	bool					lSystem_UseCylinders;
 };
 
 #endif
