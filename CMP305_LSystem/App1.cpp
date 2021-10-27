@@ -245,18 +245,18 @@ void App1::BuildTree3D()
 			dir *= XMVectorSet(1.25f, 1.25f, 1.25f, 1.f);
 			break;
 		case '&':
-			//rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
-			rng = AI_DEG_TO_RAD(20.f);
+			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / (3.1415f / 4.f));
+			//rng = AI_DEG_TO_RAD(20.f);
 			currentRotation *= XMMatrixRotationAxis(XMVector3Transform(fwd, currentRotation), rng);
 			break;
 		case '<':
-			//rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
-			rng = AI_DEG_TO_RAD(120.f);
+			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / (2.f * 3.1415f / 3.f));
+			//rng = AI_DEG_TO_RAD(120.f);
 			currentRotation *= XMMatrixRotationAxis(XMVector3Transform(dir, currentRotation), rng);
 			break;
 		case '>':
-			//rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
-			rng = AI_DEG_TO_RAD(-120.f);
+			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / (2.f * -3.1415f / 3.f));
+			//rng = AI_DEG_TO_RAD(-120.f);
 			currentRotation *= XMMatrixRotationAxis(XMVector3Transform(dir, currentRotation), rng);
 			break;
 		case 'A':
