@@ -16,6 +16,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
 
 	textureMgr->loadTexture(L"grass", L"res/grass.png");
+	textureMgr->loadTexture(L"wood", L"res/wood.png");
 
 	// Create Mesh object and shader object
 	m_Line.reset( new LineMesh( renderer->getDevice(), renderer->getDeviceContext() ) );
@@ -49,8 +50,9 @@ App1::~App1()
 	// Run base application deconstructor
 	BaseApplication::~BaseApplication();
 
-	//Delete cylinders
-	m_Cylinders.clear();
+	//Delete 3d objects
+	m_3dtree_branches.clear();
+	m_3dtree_leaves.clear();
 }
 
 bool App1::frame()
@@ -91,11 +93,17 @@ bool App1::render()
 		m_Line->sendData(renderer->getDeviceContext());
 		shader->render(renderer->getDeviceContext(), m_Line->getIndexCount());
 	}
-	for (unsigned i = 0u; i < m_Cylinders.size(); ++i)
+	for (unsigned i = 0u; i < m_3dtree_branches.size(); ++i)
 	{
-		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix * m_Cylinders[i]->m_Transform, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
-		m_Cylinders[i]->sendData(renderer->getDeviceContext());
-		shader->render(renderer->getDeviceContext(), m_Cylinders[i]->getIndexCount());
+		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix * m_3dtree_branches[i]->m_Transform, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
+		m_3dtree_branches[i]->sendData(renderer->getDeviceContext());
+		shader->render(renderer->getDeviceContext(), m_3dtree_branches[i]->getIndexCount());
+	}
+	for (unsigned i = 0u; i < m_3dtree_leaves.size(); ++i)
+	{
+		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix * m_3dtree_leaves[i]->m_Transform, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+		m_3dtree_leaves[i]->sendData(renderer->getDeviceContext());
+		shader->render(renderer->getDeviceContext(), m_3dtree_leaves[i]->getIndexCount());
 	}
 	
 	// Render GUI
@@ -149,7 +157,10 @@ void App1::gui()
 	if (ImGui::Checkbox("Use Cylinders", &lSystem_UseCylinders))
 	{
 		if (lSystem_UseCylinders) m_Line->Clear();
-		else m_Cylinders.clear();
+		else {
+			m_3dtree_branches.clear();
+			m_3dtree_leaves.clear();
+		}
 	}
 	if (ImGui::Button("Iterate"))
 	{
@@ -224,7 +235,8 @@ void App1::BuildTree3D()
 {
 	//Clear any lines we might already have
 	m_Line->Clear();
-	m_Cylinders.clear();
+	m_3dtree_branches.clear();
+	m_3dtree_leaves.clear();
 
 	//Get the current L-System string, right now we have a place holder
 	std::string systemString = lSystem.GetCurrentSystem();
@@ -246,7 +258,7 @@ void App1::BuildTree3D()
 			if(!lSystem_UseCylinders) m_Line->AddLine(pos, pos + step);	//Add the line segment to the line mesh
 			else
 			{
-				m_Cylinders.push_back(std::unique_ptr<CylinderMesh>(new CylinderMesh(
+				m_3dtree_branches.push_back(std::unique_ptr<CylinderMesh>(new CylinderMesh(
 					renderer->getDevice(),
 					renderer->getDeviceContext(),
 					1,
@@ -255,9 +267,15 @@ void App1::BuildTree3D()
 					.1f * cylinder_radius_scale,
 					.1f * cylinder_radius_scale * .6f
 				)));
-				m_Cylinders.back()->m_Transform =  currentRotation * XMMatrixTranslationFromVector(pos);
+				m_3dtree_branches.back()->m_Transform =  currentRotation * XMMatrixTranslationFromVector(pos);
 			}
 			pos += step;						//Move the position marker
+			break;
+		case 'A':
+			//Add a leave
+			if (!lSystem_UseCylinders) break;
+			m_3dtree_leaves.push_back(std::unique_ptr<Leaf>(new Leaf(renderer->getDevice(), renderer->getDeviceContext())));
+			m_3dtree_leaves.back()->m_Transform = XMMatrixScaling(.25f, .25f, .25f) * XMMatrixTranslationFromVector(pos);
 			break;
 		case '[':
 			pos_stack.push_back(pos);
@@ -287,8 +305,6 @@ void App1::BuildTree3D()
 			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / -3.1415f);
 			//rng = AI_DEG_TO_RAD(-120.f);
 			currentRotation *= XMMatrixRotationAxis(XMVector3Transform(dir, currentRotation), rng);
-			break;
-		case 'A':
 			break;
 		default:
 			break;

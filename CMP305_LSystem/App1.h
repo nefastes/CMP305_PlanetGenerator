@@ -7,6 +7,7 @@
 #include "LightShader.h"
 #include "LineMesh.h"
 #include "CylinderMesh.h"
+#include "Leaf.h"
 #include "LSystem.h"
 #include <memory>
 #include <vector>
@@ -34,7 +35,8 @@ private:
 
 	unique_ptr<LightShader>					shader;
 	unique_ptr<LineMesh>					m_Line;
-	std::vector<unique_ptr<CylinderMesh>>	m_Cylinders;
+	std::vector<unique_ptr<CylinderMesh>>	m_3dtree_branches;
+	std::vector<unique_ptr<Leaf>>			m_3dtree_leaves;
 
 	unique_ptr<Light>		light;
 	LSystem					lSystem;
