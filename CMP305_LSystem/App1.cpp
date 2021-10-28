@@ -252,10 +252,10 @@ void App1::BuildTree3D()
 					1,
 					6,
 					XMVectorGetX(XMVector3Length(step)),
-					.5f * XMVectorGetX(XMVector3Length(dir)),
-					.5f * XMVectorGetX(XMVector3Length(dir * XMVectorSet(.8f, .8f, .8f, 1.f)))
+					.1f * XMVectorGetX(XMVector3Length(dir)),
+					.1f * XMVectorGetX(XMVector3Length(dir * XMVectorSet(.8f, .8f, .8f, 1.f)))
 				)));
-				m_Cylinders.back()->m_Transform = XMMatrixTranslationFromVector(pos) * currentRotation;
+				m_Cylinders.back()->m_Transform =  currentRotation * XMMatrixTranslationFromVector(pos);
 			}
 			pos += step;						//Move the position marker
 			break;
