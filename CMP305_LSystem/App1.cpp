@@ -236,7 +236,7 @@ void App1::BuildTree3D()
 	XMMATRIX currentRotation = XMMatrixRotationRollPitchYaw(0, 0, 0);
 	std::vector<XMMATRIX> rotation_stack;
 	std::vector<XMVECTOR> pos_stack;
-	float rng;
+	float rng = 0.f, cylinder_radius_scale = 1.f;
 
 	//Build 3D tree
 	for (int i = 0; i < systemString.length(); i++) {
@@ -252,8 +252,8 @@ void App1::BuildTree3D()
 					1,
 					6,
 					XMVectorGetX(XMVector3Length(step)),
-					.1f * XMVectorGetX(XMVector3Length(dir)),
-					.1f * XMVectorGetX(XMVector3Length(dir * XMVectorSet(.8f, .8f, .8f, 1.f)))
+					.1f * cylinder_radius_scale,
+					.1f * cylinder_radius_scale * .6f
 				)));
 				m_Cylinders.back()->m_Transform =  currentRotation * XMMatrixTranslationFromVector(pos);
 			}
@@ -263,6 +263,7 @@ void App1::BuildTree3D()
 			pos_stack.push_back(pos);
 			rotation_stack.push_back(currentRotation);
 			dir *= XMVectorSet(.8f, .8f, .8f, 1.f);
+			cylinder_radius_scale *= .6f;
 			break;
 		case ']':
 			pos = pos_stack.back();
@@ -270,6 +271,7 @@ void App1::BuildTree3D()
 			currentRotation = rotation_stack.back();
 			rotation_stack.pop_back();
 			dir /= XMVectorSet(.8f, .8f, .8f, 1.f);
+			cylinder_radius_scale /= .6f;
 			break;
 		case '&':
 			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / (3.1415f / 4.f));
