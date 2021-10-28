@@ -262,7 +262,7 @@ void App1::BuildTree3D()
 					renderer->getDevice(),
 					renderer->getDeviceContext(),
 					1,
-					6,
+					2,
 					XMVectorGetX(XMVector3Length(step)),
 					.1f * cylinder_radius_scale,
 					.1f * cylinder_radius_scale * .6f
@@ -274,7 +274,7 @@ void App1::BuildTree3D()
 		case 'A':
 			//Add a leave
 			if (!lSystem_UseCylinders) break;
-			m_3dtree_leaves.push_back(std::unique_ptr<Leaf>(new Leaf(renderer->getDevice(), renderer->getDeviceContext())));
+			m_3dtree_leaves.push_back(std::unique_ptr<Leaf>(new Leaf(renderer->getDevice(), renderer->getDeviceContext(), 2)));
 			m_3dtree_leaves.back()->m_Transform = XMMatrixScaling(.25f, .25f, .25f) * XMMatrixTranslationFromVector(pos);
 			break;
 		case '[':
