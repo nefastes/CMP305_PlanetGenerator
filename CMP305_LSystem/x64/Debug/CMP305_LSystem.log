@@ -1,13 +1,4 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(467,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (CMP305_Base.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   App1.cpp
 C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(29,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
-  LineMesh.cpp
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(29,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.cpp(24,36): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.cpp(69,67): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.cpp(83,59): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.cpp(93,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-  Main.cpp
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(29,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
-  Generating Code...
   CMP305_LSystem.vcxproj -> C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Debug\CMP305_LSystem.exe

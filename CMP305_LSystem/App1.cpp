@@ -48,6 +48,9 @@ App1::~App1()
 {
 	// Run base application deconstructor
 	BaseApplication::~BaseApplication();
+
+	//Delete cylinders
+	m_Cylinders.clear();
 }
 
 bool App1::frame()
@@ -87,6 +90,12 @@ bool App1::render()
 		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
 		m_Line->sendData(renderer->getDeviceContext());
 		shader->render(renderer->getDeviceContext(), m_Line->getIndexCount());
+	}
+	for (unsigned i = 0u; i < m_Cylinders.size(); ++i)
+	{
+		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix * m_Cylinders[i]->m_Transform, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+		m_Cylinders[i]->sendData(renderer->getDeviceContext());
+		shader->render(renderer->getDeviceContext(), m_Cylinders[i]->getIndexCount());
 	}
 	
 	// Render GUI
@@ -137,7 +146,11 @@ void App1::gui()
 		lSystem.AddRule('>', ">");
 		lSystem.AddRule('<', "<");
 	}
-	ImGui::Checkbox("Use Cylinders", &lSystem_UseCylinders);
+	if (ImGui::Checkbox("Use Cylinders", &lSystem_UseCylinders))
+	{
+		if (lSystem_UseCylinders) m_Line->Clear();
+		else m_Cylinders.clear();
+	}
 	if (ImGui::Button("Iterate"))
 	{
 		lSystem.Iterate();
@@ -211,6 +224,7 @@ void App1::BuildTree3D()
 {
 	//Clear any lines we might already have
 	m_Line->Clear();
+	m_Cylinders.clear();
 
 	//Get the current L-System string, right now we have a place holder
 	std::string systemString = lSystem.GetCurrentSystem();
@@ -219,8 +233,6 @@ void App1::BuildTree3D()
 	XMVECTOR pos = XMVectorReplicate(0.0f);	//Current position (0,0,0)
 	XMVECTOR dir = XMVectorSet(0, 1, 0, 1);	//Current direction is "Up"
 	XMVECTOR fwd = XMVectorSet(0, 0, 1, 1);	//Rotation axis.
-	XMVECTOR y_axis = XMVectorSet(0, 1, 0, 1);	//Rotation axis.
-	XMVECTOR x_axis = XMVectorSet(1, 0, 0, 1);	//Rotation axis.
 	XMMATRIX currentRotation = XMMatrixRotationRollPitchYaw(0, 0, 0);
 	std::vector<XMMATRIX> rotation_stack;
 	std::vector<XMVECTOR> pos_stack;
@@ -231,8 +243,20 @@ void App1::BuildTree3D()
 		switch (systemString[i]) {
 		case 'F':	//Draw a line segment and move forward
 			XMVECTOR step = XMVector3Transform(dir, currentRotation);
-			m_Line->AddLine(pos, pos + step);	//Add the line segment to the line mesh
-			//TODO: ADD A NEW CYLINDER HERE
+			if(!lSystem_UseCylinders) m_Line->AddLine(pos, pos + step);	//Add the line segment to the line mesh
+			else
+			{
+				m_Cylinders.push_back(std::unique_ptr<CylinderMesh>(new CylinderMesh(
+					renderer->getDevice(),
+					renderer->getDeviceContext(),
+					1,
+					6,
+					XMVectorGetX(XMVector3Length(step)),
+					.5f * XMVectorGetX(XMVector3Length(dir)),
+					.5f * XMVectorGetX(XMVector3Length(dir * XMVectorSet(.8f, .8f, .8f, 1.f)))
+				)));
+				m_Cylinders.back()->m_Transform = XMMatrixTranslationFromVector(pos) * currentRotation;
+			}
 			pos += step;						//Move the position marker
 			break;
 		case '[':
@@ -273,7 +297,10 @@ void App1::BuildTree3D()
 	//If we are rendering cylinders..
 	else
 	{
-
+		/*for (unsigned i = 0u; i < m_Cylinders.size(); ++i)
+		{
+			m_Cylinders[i]->
+		}*/
 	}
 }
 

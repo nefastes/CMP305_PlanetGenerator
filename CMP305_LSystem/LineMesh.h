@@ -31,7 +31,14 @@ public:
 	//Line manipulation
 	void	AddLine(XMVECTOR start, XMVECTOR end) { m_LineList.push_back(LineSegment(start, end)); }
 	void	AddSegment() { m_LineList.push_back(LineSegment()); }
-	void	Clear() { m_LineList.clear(); }
+	void	Clear() {
+		m_LineList.clear();
+		vertices.clear();
+		indices.clear();
+		if(vertexBuffer != NULL) vertexBuffer->Release();
+		if(indexBuffer != NULL) indexBuffer->Release();
+		indexCount = 0;
+	}
 
 private:
 	std::vector<VertexType>		vertices;
