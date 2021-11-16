@@ -6,7 +6,10 @@ App1::App1() :
 	lSystem("A"),
 	lSystem_nIterations(1),
 	lSystem_BuildType(0),
-	lSystem_UseCylinders(false)
+	lSystem_UseCylinders(false),
+	fabrik_goal_position(XMFLOAT3(0.f, 1.f, 0.f)),
+	fabrik_n_segments(1),
+	fabrik_total_length(1.f)
 {
 }
 
@@ -41,8 +44,11 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	lSystem.AddRule('[', "[");
 	lSystem.AddRule(']', "]");
 
-	//Build the line
-	//BuildLine2D();
+	//Fabrik
+	fabrik_goal_mesh = std::make_unique<SphereMesh>(renderer->getDevice(), renderer->getDeviceContext());
+	fabrik_mesh = std::make_unique<LineMesh>(renderer->getDevice(), renderer->getDeviceContext());
+
+	InitFabrik();
 }
 
 App1::~App1()
@@ -64,6 +70,8 @@ bool App1::frame()
 	{
 		return false;
 	}
+	RunFabrik();
+
 	// Render the graphics.
 	result = render();
 	if (!result)
@@ -105,6 +113,19 @@ bool App1::render()
 		m_3dtree_leaves[i]->sendData(renderer->getDeviceContext());
 		shader->render(renderer->getDeviceContext(), m_3dtree_leaves[i]->getIndexCount());
 	}
+
+	if (fabrik_mesh->getIndexCount())
+	{
+		fabrik_mesh->sendData(renderer->getDeviceContext());
+		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+		shader->render(renderer->getDeviceContext(), fabrik_mesh->getIndexCount());
+	}
+
+	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixScaling(.125f, .125f, .125f));
+	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z));
+	fabrik_goal_mesh->sendData(renderer->getDeviceContext());
+	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
+	shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());
 	
 	// Render GUI
 	gui();
@@ -127,58 +148,70 @@ void App1::gui()
 	ImGui::Text("Camera Pos: (%.2f, %.2f, %.2f)", camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
 
-	ImGui::LabelText("L-System", "");
-
-	ImGui::SliderInt("nIterations", &lSystem_nIterations, 1, 15);
-	if (ImGui::RadioButton("2D Tree", &lSystem_BuildType, 0))
+	if (ImGui::CollapsingHeader("LSystems"))
 	{
-		lSystem.SetAxiom("A");
-		//Branching binary tree rules from lab sheet
-		lSystem.ClearRules();
-		lSystem.AddRule('B', "BB");
-		lSystem.AddRule('A', "B[A]A");
-		lSystem.AddRule('[', "[");
-		lSystem.AddRule(']', "]");
-	}
-	ImGui::SameLine();
-	if (ImGui::RadioButton("3D Tree", &lSystem_BuildType, 1))
-	{
-		lSystem.SetAxiom("FA");
-		//3D tree rules from lab sheet
-		lSystem.ClearRules();
-		lSystem.AddRule('A', "[&FA][<&FA][>&FA]");
-		lSystem.AddRule('F', "F");
-		lSystem.AddRule('[', "[");
-		lSystem.AddRule(']', "]");
-		lSystem.AddRule('&', "&");
-		lSystem.AddRule('>', ">");
-		lSystem.AddRule('<', "<");
-	}
-	if (ImGui::Checkbox("Use Cylinders", &lSystem_UseCylinders))
-	{
-		if (lSystem_UseCylinders) m_Line->Clear();
-		else {
-			m_3dtree_branches.clear();
-			m_3dtree_leaves.clear();
+		ImGui::SliderInt("nIterations", &lSystem_nIterations, 1, 15);
+		if (ImGui::RadioButton("2D Tree", &lSystem_BuildType, 0))
+		{
+			lSystem.SetAxiom("A");
+			//Branching binary tree rules from lab sheet
+			lSystem.ClearRules();
+			lSystem.AddRule('B', "BB");
+			lSystem.AddRule('A', "B[A]A");
+			lSystem.AddRule('[', "[");
+			lSystem.AddRule(']', "]");
 		}
-	}
-	if (ImGui::Button("Iterate"))
-	{
-		lSystem.Iterate();
-		if (lSystem_BuildType == 0) BuildLine2D();
-		else BuildTree3D();
-	}
-	if (ImGui::Button("Run System"))
-	{
-		lSystem.Run((unsigned)lSystem_nIterations);
-		if (lSystem_BuildType == 0) BuildLine2D();
-		else BuildTree3D();
-	}
+		ImGui::SameLine();
+		if (ImGui::RadioButton("3D Tree", &lSystem_BuildType, 1))
+		{
+			lSystem.SetAxiom("FA");
+			//3D tree rules from lab sheet
+			lSystem.ClearRules();
+			lSystem.AddRule('A', "[&FA][<&FA][>&FA]");
+			lSystem.AddRule('F', "F");
+			lSystem.AddRule('[', "[");
+			lSystem.AddRule(']', "]");
+			lSystem.AddRule('&', "&");
+			lSystem.AddRule('>', ">");
+			lSystem.AddRule('<', "<");
+		}
+		if (ImGui::Checkbox("Use Cylinders", &lSystem_UseCylinders))
+		{
+			if (lSystem_UseCylinders) m_Line->Clear();
+			else {
+				m_3dtree_branches.clear();
+				m_3dtree_leaves.clear();
+			}
+		}
+		if (ImGui::Button("Iterate"))
+		{
+			lSystem.Iterate();
+			if (lSystem_BuildType == 0) BuildLine2D();
+			else BuildTree3D();
+		}
+		if (ImGui::Button("Run System"))
+		{
+			lSystem.Run((unsigned)lSystem_nIterations);
+			if (lSystem_BuildType == 0) BuildLine2D();
+			else BuildTree3D();
+		}
 
-	ImGui::LabelText(lSystem.GetAxiom().c_str(), "Axiom:");
+		ImGui::LabelText(lSystem.GetAxiom().c_str(), "Axiom:");
 
-	ImGui::Text("System:");
-	ImGui::TextWrapped(lSystem.GetCurrentSystem().c_str());	
+		ImGui::Text("System:");
+		ImGui::TextWrapped(lSystem.GetCurrentSystem().c_str());
+	}
+	if (ImGui::CollapsingHeader("FABRIK"))
+	{
+		ImGui::Text("Goal:");
+		ImGui::SliderFloat3("Position", &fabrik_goal_position.x, -10.f, 10.f);
+
+		ImGui::Separator();
+
+		ImGui::Text("Segments Control:");
+		ImGui::SliderInt("N Segments", &fabrik_n_segments, 1, 10);
+		ImGui::SliderFloat("Total Length", &fabrik_total_length, .1f, 5.f);
+	}
 
 	// Render UI
 	ImGui::Render();
@@ -312,14 +345,42 @@ void App1::BuildTree3D()
 	}
 	//Build the vertices if we are rendering lines
 	if (!lSystem_UseCylinders) m_Line->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
-	//If we are rendering cylinders..
-	else
-	{
-		/*for (unsigned i = 0u; i < m_Cylinders.size(); ++i)
-		{
-			m_Cylinders[i]->
-		}*/
-	}
+}
+
+void App1::InitFabrik()
+{
+	//Initialises a line of FABRIK_N_SEGMENTS in the range FABRIK_TOTAL_LENGTH
+
+	//Clear any lines we might already have
+	fabrik_mesh->Clear();
+
+	//Calculate the length of each individual segment, they will all be pointing upwards first
+	float segment_length = fabrik_total_length / (float)fabrik_n_segments;
+
+	//Place each segment one after the other
+	for (int i = 0; i < fabrik_n_segments; ++i)
+		fabrik_mesh->AddLine(
+			XMVectorSet(0.f, fabrik_total_length - (float)(i + 1) * segment_length, 0.f, 1.f),
+			XMVectorSet(0.f, fabrik_total_length - (float)i * segment_length, 0.f, 1.f)
+		);
+
+
+	//Build the vertices
+	fabrik_mesh->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
+}
+
+void App1::RunFabrik()
+{
+	//Move each segment towards their goal position
+
+	//Move the first segment to the goal
+	fabrik_mesh->getSegment(0).update(XMVectorSet(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z, 1.f));
+
+	//Move the other segments
+	for (int i = 1; i < fabrik_n_segments; ++i)
+		fabrik_mesh->getSegment(i).update(fabrik_mesh->getSegment(i - 1).getPosition());
+
+	fabrik_mesh->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
 }
 
 void App1::CleanSystem()

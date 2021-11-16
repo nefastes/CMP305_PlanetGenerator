@@ -166,6 +166,7 @@
   <ItemGroup>
     <ClCompile Include="App1.cpp" />
     <ClCompile Include="CylinderMesh.cpp" />
+    <ClCompile Include="Fabrik_Segment.cpp" />
     <ClCompile Include="Leaf.cpp" />
     <ClCompile Include="LightShader.cpp" />
     <ClCompile Include="LineMesh.cpp" />
@@ -175,6 +176,7 @@
   <ItemGroup>
     <ClInclude Include="App1.h" />
     <ClInclude Include="CylinderMesh.h" />
+    <ClInclude Include="Fabrik_Segment.h" />
     <ClInclude Include="Leaf.h" />
     <ClInclude Include="LightShader.h" />
     <ClInclude Include="LineMesh.h" />

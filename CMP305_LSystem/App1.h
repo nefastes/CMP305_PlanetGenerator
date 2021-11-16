@@ -9,8 +9,10 @@
 #include "CylinderMesh.h"
 #include "Leaf.h"
 #include "LSystem.h"
+#include "Fabrik_Segment.h"
 #include <memory>
 #include <vector>
+#include <array>
 
 using std::unique_ptr;
 
@@ -30,6 +32,8 @@ protected:
 private:
 	void BuildLine2D();
 	void BuildTree3D();
+	void InitFabrik();
+	void RunFabrik();
 	void CleanSystem();
 	float Rand() { return (float)rand() / RAND_MAX; }
 
@@ -43,6 +47,13 @@ private:
 	int						lSystem_nIterations;
 	int						lSystem_BuildType;
 	bool					lSystem_UseCylinders;
+
+
+	std::unique_ptr<SphereMesh> fabrik_goal_mesh;
+	XMFLOAT3 fabrik_goal_position;
+	int fabrik_n_segments;
+	float fabrik_total_length;
+	unique_ptr<LineMesh> fabrik_mesh;
 };
 
 #endif
