@@ -13,29 +13,7 @@ public:
 
 	XMVECTOR& getPosition() { return start; }
 
-	void update(XMVECTOR goal)
-	{
-		//Compute the two vectors
-		XMVECTOR v1 = goal - start;
-		XMVECTOR v2 = end - start;
-
-		//Compute the required data for the rotation of the segment
-		XMVECTOR rotation_axis = XMVector3Cross(v1, v2);
-		rotation_axis = XMVectorSetW(rotation_axis, 1.f);	//gets zero'd out by the cross
-		float rotation_angle = XMVectorGetX(XMVector3Dot(v1, v2));
-
-		//Rotate the segment
-		if (!XMVector3Equal(rotation_axis, XMVectorZero()))
-		{
-			XMMATRIX transform = XMMatrixRotationAxis(rotation_axis, rotation_angle);
-			end = XMVector3Transform(end, transform);
-			v2 = end - start;
-		}
-
-		//
-		end = goal;
-		start = goal - v2;
-	}
+	void update(XMVECTOR goal);
 	
 	XMVECTOR start;
 	XMVECTOR end;
