@@ -365,10 +365,6 @@ void App1::InitFabrik()
 			XMVectorSet(0.f, fabrik_total_length - (float)(i + 1) * segment_length, 0.f, 1.f),
 			XMVectorSet(0.f, fabrik_total_length - (float)i * segment_length, 0.f, 1.f)
 		);
-
-
-	//Build the vertices
-	fabrik_mesh->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
 }
 
 void App1::RunFabrik()
@@ -378,10 +374,10 @@ void App1::RunFabrik()
 	// FABRIK - Forward
 	////
 	
-	//Move each segment towards their goal position
+	//Move each segment towards their target position
 	//Move the first segment to the goal
 	fabrik_mesh->getSegment(0).follow(XMVectorSet(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z, 1.f));
-	//Move the other segments
+	//Move the other segments to the start of each previous segment
 	for (int i = 1; i < fabrik_n_segments; ++i)
 		fabrik_mesh->getSegment(i).follow(fabrik_mesh->getSegment(i - 1).getStart());
 
@@ -390,9 +386,9 @@ void App1::RunFabrik()
 	// FABRIK - Backward
 	////
 
-	//Move the first segment to the origin
+	//Move the last segment to the origin
 	fabrik_mesh->getSegment(fabrik_n_segments - 1).moveBack(XMVectorSet(0.f, 0.f, 0.f, 1.f));
-	//Move the other segments
+	//Move the other segments to the end of the next segment
 	for (int i = fabrik_n_segments - 2; i >= 0; --i)
 		fabrik_mesh->getSegment(i).moveBack(fabrik_mesh->getSegment(i + 1).getEnd());
 
