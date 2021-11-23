@@ -32,8 +32,6 @@ protected:
 private:
 	void BuildLine2D();
 	void BuildTree3D();
-	void CleanSystem();
-	float Rand() { return (float)rand() / RAND_MAX; }
 
 	unique_ptr<LightShader>					shader;
 	unique_ptr<LineMesh>					m_Line;

@@ -68,7 +68,7 @@ void FabrikMesh::update(ID3D11Device* device, ID3D11DeviceContext* deviceContext
 	////
 
 	//Move the last segment to the origin
-	getSegment(n_segments - 1).moveBack(XMVectorSet(0.f, 0.f, 0.f, 1.f));
+	getSegment(n_segments - 1).moveBack(XMVectorSet(position.x, position.y, position.z, 1.f));
 	//Move the other segments to the end of the next segment
 	for (int i = n_segments - 2; i >= 0; --i)
 		getSegment(i).moveBack(getSegment(i + 1).getEnd());

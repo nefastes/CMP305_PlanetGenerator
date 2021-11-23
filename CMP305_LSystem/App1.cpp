@@ -51,7 +51,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	//
 	for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
 	{
-		grass_sprouts[i] = std::make_unique<FabrikMesh>(renderer->getDevice(), renderer->getDeviceContext(), XMFLOAT3(1.f, 0.f, (float)i), XMFLOAT3(1.f, .9f, (float)i + .1f), 1, 1.f);
+		grass_sprouts[i] = std::make_unique<FabrikMesh>(renderer->getDevice(), renderer->getDeviceContext(), XMFLOAT3(1.f, 0.f, (float)i), XMFLOAT3(0.f, .0f, .0f), 4, .5f);
 		grass_sprouts[i]->update(renderer->getDevice(), renderer->getDeviceContext());
 	}
 }
@@ -127,18 +127,18 @@ bool App1::render()
 		shader->render(renderer->getDeviceContext(), fabrik_mesh->getIndexCount());
 	}
 
-	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixScaling(.125f, .125f, .125f));
-	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z));
-	fabrik_goal_mesh->sendData(renderer->getDeviceContext());
-	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
-	shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());
-
 	for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
 	{
 		grass_sprouts[i]->sendData(renderer->getDeviceContext());
 		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
 		shader->render(renderer->getDeviceContext(), grass_sprouts[i]->getIndexCount());
 	}
+
+	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixScaling(.125f, .125f, .125f));
+	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z));
+	fabrik_goal_mesh->sendData(renderer->getDeviceContext());
+	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
+	shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());
 	
 	// Render GUI
 	gui();
@@ -361,9 +361,4 @@ void App1::BuildTree3D()
 	}
 	//Build the vertices if we are rendering lines
 	if (!lSystem_UseCylinders) m_Line->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
-}
-
-void App1::CleanSystem()
-{
-	m_Line->Clear();
 }
