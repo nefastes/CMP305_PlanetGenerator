@@ -4,13 +4,14 @@ class FabrikMesh : public LineMesh
 {
 public:
 	FabrikMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext);
-	FabrikMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, XMFLOAT3 pos);
-	FabrikMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, float posX, float posY, float posZ);
+	FabrikMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, XMFLOAT3 pos, XMFLOAT3 goal, int nSegment, float length);
+	FabrikMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, float posX, float posY, float posZ, float goalX, float goalY, float goalZ, int nSegment, float length);
 	~FabrikMesh();
 
+private:
 	void init();
-	void update();
-	void render(ID3D11Device* device, ID3D11DeviceContext* deviceContext);
+public:
+	void update(ID3D11Device* device, ID3D11DeviceContext* deviceContext);
 
 	void setPosition(float& x, float& y, float& z);
 	void setPosition(XMFLOAT3& pos);

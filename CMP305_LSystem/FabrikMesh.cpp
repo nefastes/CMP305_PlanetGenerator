@@ -6,22 +6,26 @@ FabrikMesh::FabrikMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 	goal_position = XMFLOAT3(0.f, 1.f, 0.f);
 	n_segments = 1;
 	total_length = 1.f;
+	init();
 }
 
-FabrikMesh::FabrikMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, XMFLOAT3 pos) : LineMesh(device, deviceContext)
+FabrikMesh::FabrikMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, XMFLOAT3 pos, XMFLOAT3 goal, int nSegment, float length) : LineMesh(device, deviceContext)
 {
 	position = pos;
-	goal_position = XMFLOAT3(0.f, 1.f, 0.f);
-	n_segments = 1;
-	total_length = 1.f;
+	goal_position = goal;
+	n_segments = nSegment;
+	total_length = length;
+	init();
 }
 
-FabrikMesh::FabrikMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, float posX, float posY, float posZ) : LineMesh(device, deviceContext)
+FabrikMesh::FabrikMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, float posX, float posY, float posZ,
+	float goalX, float goalY, float goalZ, int nSegment, float length) : LineMesh(device, deviceContext)
 {
 	position = XMFLOAT3(posX, posY, posZ);
-	goal_position = XMFLOAT3(0.f, 1.f, 0.f);
-	n_segments = 1;
-	total_length = 1.f;
+	goal_position = XMFLOAT3(goalX, goalY, goalZ);
+	n_segments = nSegment;
+	total_length = length;
+	init();
 }
 
 FabrikMesh::~FabrikMesh()
@@ -44,7 +48,7 @@ void FabrikMesh::init()
 		);
 }
 
-void FabrikMesh::update()
+void FabrikMesh::update(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	/////
 	// Inverse Kinematics
@@ -68,10 +72,7 @@ void FabrikMesh::update()
 	//Move the other segments to the end of the next segment
 	for (int i = n_segments - 2; i >= 0; --i)
 		getSegment(i).moveBack(getSegment(i + 1).getEnd());
-}
 
-void FabrikMesh::render(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
-{
 	//Build the vertices
 	BuildLine(deviceContext, device);
 }
@@ -99,11 +100,13 @@ void FabrikMesh::setGoal(XMFLOAT3& g)
 void FabrikMesh::setSegmentCount(int& c)
 {
 	n_segments = c;
+	init();
 }
 
 void FabrikMesh::setLength(float& l)
 {
 	total_length = l;
+	init();
 }
 
 const XMFLOAT3& FabrikMesh::getPosition()

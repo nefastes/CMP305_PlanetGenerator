@@ -36,7 +36,7 @@
     <ClCompile Include="Leaf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Fabrik_Segment.cpp">
+    <ClCompile Include="FabrikMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,7 +59,7 @@
     <ClInclude Include="Leaf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Fabrik_Segment.h">
+    <ClInclude Include="FabrikMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

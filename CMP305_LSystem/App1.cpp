@@ -46,9 +46,14 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	//Fabrik
 	fabrik_goal_mesh = std::make_unique<SphereMesh>(renderer->getDevice(), renderer->getDeviceContext());
-	fabrik_mesh = std::make_unique<LineMesh>(renderer->getDevice(), renderer->getDeviceContext());
+	fabrik_mesh = std::make_unique<FabrikMesh>(renderer->getDevice(), renderer->getDeviceContext(), XMFLOAT3(0.f, 0.f, 0.f), XMFLOAT3(0.f, 1.f, 0.f), 1, 1.f);
 
-	InitFabrik();
+	//
+	for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
+	{
+		grass_sprouts[i] = std::make_unique<FabrikMesh>(renderer->getDevice(), renderer->getDeviceContext(), XMFLOAT3(1.f, 0.f, (float)i), XMFLOAT3(1.f, .9f, (float)i + .1f), 1, 1.f);
+		grass_sprouts[i]->update(renderer->getDevice(), renderer->getDeviceContext());
+	}
 }
 
 App1::~App1()
@@ -70,7 +75,8 @@ bool App1::frame()
 	{
 		return false;
 	}
-	RunFabrik();
+	
+	fabrik_mesh->update(renderer->getDevice(), renderer->getDeviceContext());
 
 	// Render the graphics.
 	result = render();
@@ -126,6 +132,13 @@ bool App1::render()
 	fabrik_goal_mesh->sendData(renderer->getDeviceContext());
 	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
 	shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());
+
+	for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
+	{
+		grass_sprouts[i]->sendData(renderer->getDeviceContext());
+		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+		shader->render(renderer->getDeviceContext(), grass_sprouts[i]->getIndexCount());
+	}
 	
 	// Render GUI
 	gui();
@@ -204,15 +217,16 @@ void App1::gui()
 	if (ImGui::CollapsingHeader("FABRIK"))
 	{
 		ImGui::Text("Goal:");
-		ImGui::SliderFloat3("Position", &fabrik_goal_position.x, -10.f, 10.f);
+		if(ImGui::SliderFloat3("Position", &fabrik_goal_position.x, -10.f, 10.f))
+			fabrik_mesh->setGoal(fabrik_goal_position);
 
 		ImGui::Separator();
 
 		ImGui::Text("Segments Control:");
 		if (ImGui::SliderInt("N Segments", &fabrik_n_segments, 1, 10))
-			InitFabrik();
+			fabrik_mesh->setSegmentCount(fabrik_n_segments);
 		if (ImGui::SliderFloat("Total Length", &fabrik_total_length, .1f, 5.f))
-			InitFabrik();
+			fabrik_mesh->setLength(fabrik_total_length);
 	}
 
 	// Render UI
@@ -347,53 +361,6 @@ void App1::BuildTree3D()
 	}
 	//Build the vertices if we are rendering lines
 	if (!lSystem_UseCylinders) m_Line->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
-}
-
-void App1::InitFabrik()
-{
-	//Initialises a line of FABRIK_N_SEGMENTS in the range FABRIK_TOTAL_LENGTH
-
-	//Clear any lines we might already have
-	fabrik_mesh->Clear();
-
-	//Calculate the length of each individual segment, they will all be pointing upwards first
-	float segment_length = fabrik_total_length / (float)fabrik_n_segments;
-
-	//Place each segment one after the other
-	for (int i = 0; i < fabrik_n_segments; ++i)
-		fabrik_mesh->AddLine(
-			XMVectorSet(0.f, fabrik_total_length - (float)(i + 1) * segment_length, 0.f, 1.f),
-			XMVectorSet(0.f, fabrik_total_length - (float)i * segment_length, 0.f, 1.f)
-		);
-}
-
-void App1::RunFabrik()
-{
-	/////
-	// Inverse Kinematics
-	// FABRIK - Forward
-	////
-	
-	//Move each segment towards their target position
-	//Move the first segment to the goal
-	fabrik_mesh->getSegment(0).follow(XMVectorSet(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z, 1.f));
-	//Move the other segments to the start of each previous segment
-	for (int i = 1; i < fabrik_n_segments; ++i)
-		fabrik_mesh->getSegment(i).follow(fabrik_mesh->getSegment(i - 1).getStart());
-
-	////
-	// Inverse Kinematics
-	// FABRIK - Backward
-	////
-
-	//Move the last segment to the origin
-	fabrik_mesh->getSegment(fabrik_n_segments - 1).moveBack(XMVectorSet(0.f, 0.f, 0.f, 1.f));
-	//Move the other segments to the end of the next segment
-	for (int i = fabrik_n_segments - 2; i >= 0; --i)
-		fabrik_mesh->getSegment(i).moveBack(fabrik_mesh->getSegment(i + 1).getEnd());
-
-	//Build the vertices
-	fabrik_mesh->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
 }
 
 void App1::CleanSystem()

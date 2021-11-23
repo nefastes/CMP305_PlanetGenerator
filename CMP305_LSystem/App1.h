@@ -9,7 +9,7 @@
 #include "CylinderMesh.h"
 #include "Leaf.h"
 #include "LSystem.h"
-#include "Fabrik_Segment.h"
+#include "FabrikMesh.h"
 #include <memory>
 #include <vector>
 #include <array>
@@ -32,8 +32,6 @@ protected:
 private:
 	void BuildLine2D();
 	void BuildTree3D();
-	void InitFabrik();
-	void RunFabrik();
 	void CleanSystem();
 	float Rand() { return (float)rand() / RAND_MAX; }
 
@@ -53,7 +51,9 @@ private:
 	XMFLOAT3 fabrik_goal_position;
 	int fabrik_n_segments;
 	float fabrik_total_length;
-	unique_ptr<LineMesh> fabrik_mesh;
+	std::unique_ptr<FabrikMesh> fabrik_mesh;
+
+	std::array<std::unique_ptr<FabrikMesh>, 10> grass_sprouts;
 };
 
 #endif
