@@ -96,7 +96,7 @@ void LineMesh::initBuffers(ID3D11Device* device)
 	device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer);
 }
 
-void LineSegment::update(XMVECTOR goal)
+void LineSegment::follow(XMVECTOR goal)
 {
 	//Compute the two vectors
 	XMVECTOR dir = goal - start;
@@ -106,7 +106,6 @@ void LineSegment::update(XMVECTOR goal)
 	XMVECTOR normalized_dir = XMVector3Normalize(dir);
 	XMVECTOR normalized_segment = XMVector3Normalize(segment);
 	XMVECTOR rotation_axis = XMVector3Normalize(XMVector3Cross(normalized_dir, normalized_segment));
-	//rotation_axis = XMVectorSetW(rotation_axis, 1.f);	//gets zero'd out by the cross
 	float rotation_angle = -XMVectorGetX(XMVector3AngleBetweenNormals(normalized_dir, normalized_segment));
 	//Rotate the segment
 	if (!XMVector3Equal(rotation_axis, XMVectorZero()))
@@ -118,4 +117,12 @@ void LineSegment::update(XMVECTOR goal)
 	//Update the line components
 	start = goal - segment;
 	end = goal;
+}
+
+void LineSegment::moveBack(XMVECTOR target)
+{
+	//Need to translate the segment back to target
+	XMVECTOR segment = end - start;
+	end = target + segment;
+	start = target;
 }

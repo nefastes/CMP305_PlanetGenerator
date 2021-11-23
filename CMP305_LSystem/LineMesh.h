@@ -11,9 +11,11 @@ public:
 		start = s; end = e;
 	}
 
-	XMVECTOR& getPosition() { return start; }
+	XMVECTOR& getStart() { return start; }
+	XMVECTOR& getEnd() { return end; }
 
-	void update(XMVECTOR goal);
+	void follow(XMVECTOR goal);
+	void moveBack(XMVECTOR target);
 	
 	XMVECTOR start;
 	XMVECTOR end;

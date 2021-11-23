@@ -373,15 +373,30 @@ void App1::InitFabrik()
 
 void App1::RunFabrik()
 {
+	/////
+	// Inverse Kinematics
+	// FABRIK - Forward
+	////
+	
 	//Move each segment towards their goal position
-
 	//Move the first segment to the goal
-	fabrik_mesh->getSegment(0).update(XMVectorSet(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z, 1.f));
-
+	fabrik_mesh->getSegment(0).follow(XMVectorSet(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z, 1.f));
 	//Move the other segments
 	for (int i = 1; i < fabrik_n_segments; ++i)
-		fabrik_mesh->getSegment(i).update(fabrik_mesh->getSegment(i - 1).getPosition());
+		fabrik_mesh->getSegment(i).follow(fabrik_mesh->getSegment(i - 1).getStart());
 
+	////
+	// Inverse Kinematics
+	// FABRIK - Backward
+	////
+
+	//Move the first segment to the origin
+	fabrik_mesh->getSegment(fabrik_n_segments - 1).moveBack(XMVectorSet(0.f, 0.f, 0.f, 1.f));
+	//Move the other segments
+	for (int i = fabrik_n_segments - 2; i >= 0; --i)
+		fabrik_mesh->getSegment(i).moveBack(fabrik_mesh->getSegment(i + 1).getEnd());
+
+	//Build the vertices
 	fabrik_mesh->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
 }
 
