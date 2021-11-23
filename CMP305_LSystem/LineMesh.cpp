@@ -109,7 +109,7 @@ void LineSegment::update(XMVECTOR goal)
 	//rotation_axis = XMVectorSetW(rotation_axis, 1.f);	//gets zero'd out by the cross
 	float rotation_angle = -XMVectorGetX(XMVector3AngleBetweenNormals(normalized_dir, normalized_segment));
 	//Rotate the segment
-	if (!XMVector3Equal(dir, segment))
+	if (!XMVector3Equal(rotation_axis, XMVectorZero()))
 	{
 		XMMATRIX transform = XMMatrixRotationAxis(rotation_axis, rotation_angle);
 		segment = XMVector3Transform(segment, transform);

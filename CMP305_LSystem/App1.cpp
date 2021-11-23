@@ -209,8 +209,10 @@ void App1::gui()
 		ImGui::Separator();
 
 		ImGui::Text("Segments Control:");
-		ImGui::SliderInt("N Segments", &fabrik_n_segments, 1, 10);
-		ImGui::SliderFloat("Total Length", &fabrik_total_length, .1f, 5.f);
+		if (ImGui::SliderInt("N Segments", &fabrik_n_segments, 1, 10))
+			InitFabrik();
+		if (ImGui::SliderFloat("Total Length", &fabrik_total_length, .1f, 5.f))
+			InitFabrik();
 	}
 
 	// Render UI
