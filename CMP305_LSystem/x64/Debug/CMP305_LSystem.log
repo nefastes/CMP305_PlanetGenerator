@@ -1,10 +1,13 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(513,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (CMP305_Base.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  App1.cpp
+  FabrikMesh.cpp
 M:\CMP305\LAB5\CMP305_LSystem\LineMesh.h(35,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Tools\MSVC\14.29.30037\include\memory(3416,56): warning C4244: 'argument': conversion from '_Ty' to 'float', possible loss of data
-          with
-          [
-              _Ty=double
-          ]
-M:\CMP305\LAB5\CMP305_LSystem\App1.cpp(71): message : see reference to function template instantiation 'std::unique_ptr<FabrikMesh,std::default_delete<FabrikMesh>> std::make_unique<FabrikMesh,ID3D11Device*,ID3D11DeviceContext*,DirectX::XMFLOAT3,DirectX::XMFLOAT3,int,double,0>(ID3D11Device *&&,ID3D11DeviceContext *&&,DirectX::XMFLOAT3 &&,DirectX::XMFLOAT3 &&,int &&,double &&)' being compiled
+M:\CMP305\LAB5\CMP305_LSystem\FabrikMesh.cpp(162,22): warning C4018: '<=': signed/unsigned mismatch
+M:\CMP305\LAB5\CMP305_LSystem\FabrikMesh.cpp(180,22): warning C4018: '<': signed/unsigned mismatch
+  LineMesh.cpp
+M:\CMP305\LAB5\CMP305_LSystem\LineMesh.h(35,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
+M:\CMP305\LAB5\CMP305_LSystem\LineMesh.cpp(28,36): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+M:\CMP305\LAB5\CMP305_LSystem\LineMesh.cpp(73,67): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+M:\CMP305\LAB5\CMP305_LSystem\LineMesh.cpp(87,59): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+M:\CMP305\LAB5\CMP305_LSystem\LineMesh.cpp(97,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  Generating Code...
   CMP305_LSystem.vcxproj -> M:\CMP305\LAB5\x64\Debug\CMP305_LSystem.exe

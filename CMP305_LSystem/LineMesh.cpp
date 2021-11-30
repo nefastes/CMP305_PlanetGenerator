@@ -12,11 +12,15 @@ LineMesh::~LineMesh() {
 }
 
 void LineMesh::BuildLine(ID3D11DeviceContext* deviceContext, ID3D11Device* device) {
-	//Clear the vertex buffers
+	//Clear the vertex and index buffers
 	if (vertexBuffer != NULL) {
 		vertexBuffer->Release();
 	}
+	if (indexBuffer != NULL) {
+		indexBuffer->Release();
+	}
 	vertexBuffer = NULL;
+	indexBuffer = NULL;
 
 	vertices.clear();
 	indices.clear();

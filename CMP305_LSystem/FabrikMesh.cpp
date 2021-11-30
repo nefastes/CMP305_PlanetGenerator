@@ -130,11 +130,15 @@ void FabrikMesh::BuildCylinders(ID3D11Device* device, ID3D11DeviceContext* devic
 {
 	//Build a cylinder mesh that follows the segments (one segment, one stack)
 
-	//Clear the vertex buffers
+	//Clear the vertex and index buffers
 	if (vertexBuffer != NULL) {
 		vertexBuffer->Release();
 	}
+	if (indexBuffer != NULL) {
+		indexBuffer->Release();
+	}
 	vertexBuffer = NULL;
+	indexBuffer = NULL;
 
 	vertices.clear();
 	indices.clear();
