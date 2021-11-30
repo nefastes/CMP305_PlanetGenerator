@@ -2,6 +2,8 @@
 #ifndef _APP1_H
 #define _APP1_H
 
+#define DISTANCE_BETWEEN_GRASS_SPROUTS .4f
+
 // Includes
 #pragma once
 #include "DXF.h"	// include dxframework
@@ -37,6 +39,7 @@ private:
 
 	unique_ptr<LightShader>					shader;
 	unique_ptr<LineMesh>					m_Line;
+	std::unique_ptr<PlaneMesh>				m_ground;
 	std::vector<unique_ptr<CylinderMesh>>	m_3dtree_branches;
 	std::vector<unique_ptr<Leaf>>			m_3dtree_leaves;
 
@@ -61,7 +64,7 @@ private:
 
 	bool fabrik_render_cylinders;
 
-	std::array<std::unique_ptr<FabrikMesh>, 10> grass_sprouts;
+	std::array<std::unique_ptr<FabrikMesh>, 400> grass_sprouts;
 };
 
 #endif

@@ -28,13 +28,14 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	textureMgr->loadTexture(L"wood", L"res/wood.png");
 
 	// Create Mesh object and shader object
+	m_ground = std::make_unique<PlaneMesh>(renderer->getDevice(), renderer->getDeviceContext());
 	m_Line.reset( new LineMesh( renderer->getDevice(), renderer->getDeviceContext() ) );
 	shader.reset( new LightShader( renderer->getDevice(), hwnd ) );
 
 	light.reset( new Light );
 	light->setAmbientColour(0.25f, 0.25f, 0.25f, 1.0f);
 	light->setDiffuseColour(0.75f, 0.75f, 0.75f, 1.0f);
-	light->setDirection(1.0f, -0.0f, 0.0f);
+	light->setDirection(1.0f, -.7f, 0.0f);
 
 	camera->setPosition(0.0f, 1.0f, -3.0f);
 	camera->setRotation(0.0f, 0.0f, 00.0f);
@@ -55,11 +56,22 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	fabrik_mesh = std::make_unique<FabrikMesh>(renderer->getDevice(), renderer->getDeviceContext(), XMFLOAT3(0.f, 0.f, 0.f), XMFLOAT3(0.f, 1.f, 0.f), 1, 1.f);
 
 	//
-	for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
+	unsigned sideSize = (unsigned)sqrt(grass_sprouts.size());
+	for (unsigned i = 0u; i < sideSize; ++i)
 	{
-		grass_sprouts[i] = std::make_unique<FabrikMesh>(renderer->getDevice(), renderer->getDeviceContext(), XMFLOAT3(1.f, 0.f, (float)i), XMFLOAT3(0.f, .5f, .5f), 4, .5f);
-		grass_sprouts[i]->update(renderer->getDevice(), renderer->getDeviceContext());
-		grass_sprouts[i]->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
+		for (unsigned j = 0u; j < sideSize; ++j)
+		{
+			grass_sprouts[i * sideSize + j] = std::make_unique<FabrikMesh>(
+				renderer->getDevice(),
+				renderer->getDeviceContext(),
+				XMFLOAT3((float)j * DISTANCE_BETWEEN_GRASS_SPROUTS - (sideSize / 5u), 0.f, (float)i * DISTANCE_BETWEEN_GRASS_SPROUTS - (sideSize / 5u)),
+				XMFLOAT3(0.f, .5f, .5f),
+				4,
+				.5
+			);
+			grass_sprouts[i * sideSize + j]->update(renderer->getDevice(), renderer->getDeviceContext());
+			grass_sprouts[i * sideSize + j]->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
+		}
 	}
 }
 
@@ -95,8 +107,13 @@ bool App1::frame()
 		fabrik_mesh->setGoal(fabrik_goal_position);
 		//fabrik_mesh->setGoal(XMFLOAT3(fabrik_goal_position.x + noise, fabrik_goal_position.y, fabrik_goal_position.z + noise));
 		fabrik_goal_position.y = .5f;
-		for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
+		for (unsigned i = 0u; i < grass_sprouts.size(); ++i)
 		{
+			noise = (float)ImprovedNoise::noise((double)fabrik_animate_noise_offset.x + grass_sprouts[i]->getPosition().x, (double)fabrik_animate_noise_offset.y + grass_sprouts[i]->getPosition().z);
+			noise += .5f;	//The above already returns a values from -0.5 to 0.5
+			gui_debug_noise = noise;
+			fabrik_goal_position = XMFLOAT3(0.f + gui_wind_strength * gui_wind_direction.x * noise, 1.f, 0.f + gui_wind_strength * gui_wind_direction.y * noise);
+
 			XMFLOAT3 new_pos;
 			XMStoreFloat3(&new_pos, XMVectorAdd(XMLoadFloat3(&grass_sprouts[i]->getPosition()), XMLoadFloat3(&fabrik_goal_position)));
 			grass_sprouts[i]->setGoal(new_pos);
@@ -162,7 +179,7 @@ bool App1::render()
 		shader->render(renderer->getDeviceContext(), fabrik_mesh->getIndexCount());
 	}
 
-	for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
+	for (unsigned i = 0u; i < grass_sprouts.size(); ++i)
 	{
 		if (fabrik_render_cylinders) grass_sprouts[i]->sendData(renderer->getDeviceContext(), D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		else grass_sprouts[i]->sendData(renderer->getDeviceContext());
@@ -171,6 +188,12 @@ bool App1::render()
 	}
 
 	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixScaling(.125f, .125f, .125f));
+	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(-5.f, 0.f, -5.f));
+	m_ground->sendData(renderer->getDeviceContext());
+	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+	shader->render(renderer->getDeviceContext(), m_ground->getIndexCount());
+	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(5.f, 0.f, 5.f));
+
 	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z));
 	fabrik_goal_mesh->sendData(renderer->getDeviceContext());
 	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
@@ -258,13 +281,13 @@ void App1::gui()
 			if (fabrik_render_cylinders)
 			{
 				fabrik_mesh->BuildCylinders(renderer->getDevice(), renderer->getDeviceContext());
-				for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
+				for (unsigned i = 0u; i < grass_sprouts.size(); ++i)
 					grass_sprouts[i]->BuildCylinders(renderer->getDevice(), renderer->getDeviceContext());
 			}
 			else
 			{
 				fabrik_mesh->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
-				for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
+				for (unsigned i = 0u; i < grass_sprouts.size(); ++i)
 					grass_sprouts[i]->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
 			}
 		}
