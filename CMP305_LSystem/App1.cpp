@@ -106,13 +106,11 @@ bool App1::frame()
 		fabrik_goal_position = XMFLOAT3(0.f + gui_wind_strength * gui_wind_direction.x * noise, 1.f, 0.f + gui_wind_strength * gui_wind_direction.y * noise);
 		fabrik_mesh->setGoal(fabrik_goal_position);
 		//fabrik_mesh->setGoal(XMFLOAT3(fabrik_goal_position.x + noise, fabrik_goal_position.y, fabrik_goal_position.z + noise));
-		fabrik_goal_position.y = -.2f;
 		for (unsigned i = 0u; i < grass_sprouts.size(); ++i)
 		{
 			noise = (float)ImprovedNoise::noise((double)fabrik_animate_noise_offset.x + grass_sprouts[i]->getPosition().x, (double)fabrik_animate_noise_offset.y + grass_sprouts[i]->getPosition().z);
 			noise += .5f;	//The above already returns a values from -0.5 to 0.5
-			gui_debug_noise = noise;
-			fabrik_goal_position = XMFLOAT3(0.f + gui_wind_strength * gui_wind_direction.x * noise, 1.f, 0.f + gui_wind_strength * gui_wind_direction.y * noise);
+			fabrik_goal_position = XMFLOAT3(0.f + gui_wind_strength * gui_wind_direction.x * noise, .5f, 0.f + gui_wind_strength * gui_wind_direction.y * noise);
 
 			XMFLOAT3 new_pos;
 			XMStoreFloat3(&new_pos, XMVectorAdd(XMLoadFloat3(&grass_sprouts[i]->getPosition()), XMLoadFloat3(&fabrik_goal_position)));
