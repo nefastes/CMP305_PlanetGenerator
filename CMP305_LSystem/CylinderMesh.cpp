@@ -27,7 +27,7 @@ void CylinderMesh::init(ID3D11Device* device, int stacks, int slices, float heig
 
 	float stackHeight = height / stacks;
 	UINT ringCount = stacks + 1;
-	int sliceCount = 6;
+	int sliceCount = slices;
 
 	for (UINT i = 0; i < ringCount; i++) {
 		float y = i * stackHeight;

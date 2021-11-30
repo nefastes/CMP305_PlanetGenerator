@@ -12,7 +12,10 @@ App1::App1() :
 	fabrik_total_length(1.f),
 	fabrik_animate_with_noise(false),
 	fabrik_animate_noise_offset(0.f, 0.f),
-	gui_debug_noise(0.f)
+	gui_debug_noise(0.f),
+	gui_wind_direction(XMFLOAT2(1.f, 0.f)),
+	gui_wind_strength(1.f),
+	fabrik_render_cylinders(false)
 {
 }
 
@@ -56,6 +59,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	{
 		grass_sprouts[i] = std::make_unique<FabrikMesh>(renderer->getDevice(), renderer->getDeviceContext(), XMFLOAT3(1.f, 0.f, (float)i), XMFLOAT3(0.f, .5f, .5f), 4, .5f);
 		grass_sprouts[i]->update(renderer->getDevice(), renderer->getDeviceContext());
+		grass_sprouts[i]->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
 	}
 }
 
@@ -85,9 +89,9 @@ bool App1::frame()
 		fabrik_animate_noise_offset.x += frame_time;
 		fabrik_animate_noise_offset.y += frame_time;
 		float noise = (float)ImprovedNoise::noise((double)fabrik_animate_noise_offset.x, (double)fabrik_animate_noise_offset.y);
-		//noise -= .5f;	//The above already returns a values from -0.5 to 0.5
+		noise += .5f;	//The above already returns a values from -0.5 to 0.5
 		gui_debug_noise = noise;
-		fabrik_goal_position = XMFLOAT3(0.f + noise, 1.f, 0.f + noise);
+		fabrik_goal_position = XMFLOAT3(0.f + gui_wind_strength * gui_wind_direction.x * noise, 1.f, 0.f + gui_wind_strength * gui_wind_direction.y * noise);
 		fabrik_mesh->setGoal(fabrik_goal_position);
 		//fabrik_mesh->setGoal(XMFLOAT3(fabrik_goal_position.x + noise, fabrik_goal_position.y, fabrik_goal_position.z + noise));
 		fabrik_goal_position.y = .5f;
@@ -97,10 +101,16 @@ bool App1::frame()
 			XMStoreFloat3(&new_pos, XMVectorAdd(XMLoadFloat3(&grass_sprouts[i]->getPosition()), XMLoadFloat3(&fabrik_goal_position)));
 			grass_sprouts[i]->setGoal(new_pos);
 			grass_sprouts[i]->update(renderer->getDevice(), renderer->getDeviceContext());
+			if (fabrik_render_cylinders) grass_sprouts[i]->BuildCylinders(renderer->getDevice(), renderer->getDeviceContext());
+			else grass_sprouts[i]->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
 		}
 		fabrik_goal_position.y = 1.f;
 	}
+	//Upadte the FABRIK
 	fabrik_mesh->update(renderer->getDevice(), renderer->getDeviceContext());
+	//Build the mesh again (TODO: could this be avoided?)
+	if(fabrik_render_cylinders) fabrik_mesh->BuildCylinders(renderer->getDevice(), renderer->getDeviceContext());
+	else fabrik_mesh->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
 
 	// Render the graphics.
 	result = render();
@@ -146,14 +156,16 @@ bool App1::render()
 
 	if (fabrik_mesh->getIndexCount())
 	{
-		fabrik_mesh->sendData(renderer->getDeviceContext());
+		if(fabrik_render_cylinders) fabrik_mesh->sendData(renderer->getDeviceContext(), D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		else fabrik_mesh->sendData(renderer->getDeviceContext());
 		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
 		shader->render(renderer->getDeviceContext(), fabrik_mesh->getIndexCount());
 	}
 
 	for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
 	{
-		grass_sprouts[i]->sendData(renderer->getDeviceContext());
+		if (fabrik_render_cylinders) grass_sprouts[i]->sendData(renderer->getDeviceContext(), D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		else grass_sprouts[i]->sendData(renderer->getDeviceContext());
 		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
 		shader->render(renderer->getDeviceContext(), grass_sprouts[i]->getIndexCount());
 	}
@@ -163,7 +175,7 @@ bool App1::render()
 	fabrik_goal_mesh->sendData(renderer->getDeviceContext());
 	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
 	shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());
-	
+
 	// Render GUI
 	gui();
 
@@ -241,11 +253,28 @@ void App1::gui()
 	if (ImGui::CollapsingHeader("FABRIK"))
 	{
 		ImGui::Text("Goal:");
+		if (ImGui::Checkbox("Render Cylinders", &fabrik_render_cylinders))
+		{
+			if (fabrik_render_cylinders)
+			{
+				fabrik_mesh->BuildCylinders(renderer->getDevice(), renderer->getDeviceContext());
+				for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
+					grass_sprouts[i]->BuildCylinders(renderer->getDevice(), renderer->getDeviceContext());
+			}
+			else
+			{
+				fabrik_mesh->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
+				for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
+					grass_sprouts[i]->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
+			}
+		}
 		ImGui::Checkbox("Animate with Noise", &fabrik_animate_with_noise);
 		ImGui::Text("Debug Noise Value: %.2f", gui_debug_noise);
-		if(!fabrik_animate_with_noise)
-			if(ImGui::SliderFloat3("Position", &fabrik_goal_position.x, -10.f, 10.f))
+		if (!fabrik_animate_with_noise)
+			if (ImGui::SliderFloat3("Position", &fabrik_goal_position.x, -10.f, 10.f))
 				fabrik_mesh->setGoal(fabrik_goal_position);
+		ImGui::SliderFloat2("Wind Direction", &gui_wind_direction.x, 1.f, -1.f);
+		ImGui::SliderFloat("Wind Strength", &gui_wind_strength, 0.f, 1.f);
 
 		ImGui::Separator();
 
@@ -338,7 +367,7 @@ void App1::BuildTree3D()
 					renderer->getDevice(),
 					renderer->getDeviceContext(),
 					1,
-					2,
+					4,
 					XMVectorGetX(XMVector3Length(step)),
 					.1f * cylinder_radius_scale,
 					.1f * cylinder_radius_scale * .6f

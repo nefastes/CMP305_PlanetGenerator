@@ -27,6 +27,8 @@ public:
 	const int& getSegmentCount();
 	const float& getLength();
 
+	void BuildCylinders(ID3D11Device* device, ID3D11DeviceContext* deviceContext);
+
 private:
 	XMFLOAT3 position;
 	XMFLOAT3 goal_position;

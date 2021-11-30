@@ -48,7 +48,7 @@ public:
 
 	LineSegment& getSegment(int index) { return m_LineList[index]; }
 
-private:
+protected:
 	std::vector<VertexType>		vertices;
 	std::vector<UINT>			indices;
 	std::vector<LineSegment>	m_LineList;

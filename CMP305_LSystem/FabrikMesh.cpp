@@ -57,10 +57,10 @@ void FabrikMesh::update(ID3D11Device* device, ID3D11DeviceContext* deviceContext
 
 	//Move each segment towards their target position
 	//Move the first segment to the goal
-	getSegment(0).follow(XMVectorSet(goal_position.x, goal_position.y, goal_position.z, 1.f));
+	m_LineList[0].follow(XMVectorSet(goal_position.x, goal_position.y, goal_position.z, 1.f));
 	//Move the other segments to the start of each previous segment
 	for (int i = 1; i < n_segments; ++i)
-		getSegment(i).follow(getSegment(i - 1).getStart());
+		m_LineList[i].follow(m_LineList[i - 1].getStart());
 
 	////
 	// Inverse Kinematics
@@ -68,13 +68,10 @@ void FabrikMesh::update(ID3D11Device* device, ID3D11DeviceContext* deviceContext
 	////
 
 	//Move the last segment to the origin
-	getSegment(n_segments - 1).moveBack(XMVectorSet(position.x, position.y, position.z, 1.f));
+	m_LineList[n_segments - 1].moveBack(XMVectorSet(position.x, position.y, position.z, 1.f));
 	//Move the other segments to the end of the next segment
 	for (int i = n_segments - 2; i >= 0; --i)
-		getSegment(i).moveBack(getSegment(i + 1).getEnd());
-
-	//Build the vertices
-	BuildLine(deviceContext, device);
+		m_LineList[i].moveBack(m_LineList[i + 1].getEnd());
 }
 
 void FabrikMesh::setPosition(float& x, float& y, float& z)
@@ -127,4 +124,66 @@ const int& FabrikMesh::getSegmentCount()
 const float& FabrikMesh::getLength()
 {
 	return total_length;
+}
+
+void FabrikMesh::BuildCylinders(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+{
+	//Build a cylinder mesh that follows the segments (one segment, one stack)
+
+	//Clear the vertex buffers
+	if (vertexBuffer != NULL) {
+		vertexBuffer->Release();
+	}
+	vertexBuffer = NULL;
+
+	vertices.clear();
+	indices.clear();
+
+	float height = total_length, bottomRadius = .05f, topRadius = 0.f;
+	int stacks = n_segments, slices = 4;
+
+	float stackHeight = height / stacks;
+	UINT ringCount = stacks + 1;
+	int sliceCount = slices;
+
+	//Vertices
+	for (UINT i = 0; i < ringCount; i++) {
+		float y = i * stackHeight;
+		float r = topRadius + ((float)i / stacks) * bottomRadius;
+
+		float dTheta = 2.0f * XM_PI / sliceCount;
+
+		XMVECTOR pos = i == 0 ? m_LineList[0].getEnd() : m_LineList[i - 1].getStart();
+
+		for (UINT j = 0; j <= sliceCount; j++) {
+			VertexType vertex;
+
+			float c = cosf(j * dTheta);
+			float s = sinf(j * dTheta);
+
+			vertex.position = XMFLOAT3(XMVectorGetX(pos) + r * c, XMVectorGetY(pos), XMVectorGetZ(pos) + r * s);
+			vertex.texture.x = (float)j / sliceCount;
+			vertex.texture.y = 1.0f - (float)i / stacks;
+			vertex.normal = XMFLOAT3(r * c, 0.0f, r * s);
+
+			vertices.push_back(vertex);
+		}
+	}
+
+	//Indices
+	UINT ringVertexCount = sliceCount + 1;
+	for (UINT i = 0; i < ringCount - 1; i++) {
+		for (UINT j = 0; j < sliceCount; j++) {
+			indices.push_back((i + 1) * ringVertexCount + j + 1);
+			indices.push_back(i * ringVertexCount + j + 1);
+			indices.push_back(i * ringVertexCount + j);
+
+			indices.push_back((i + 1) * ringVertexCount + j);
+			indices.push_back((i + 1) * ringVertexCount + j + 1);
+			indices.push_back(i * ringVertexCount + j);
+		}
+	}
+
+	//Data created, initialise it as buffers in DirectX
+	initBuffers(device);
 }

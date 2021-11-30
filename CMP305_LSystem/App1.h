@@ -56,6 +56,11 @@ private:
 	float fabrik_total_length;
 	std::unique_ptr<FabrikMesh> fabrik_mesh;
 
+	XMFLOAT2 gui_wind_direction;
+	float gui_wind_strength;
+
+	bool fabrik_render_cylinders;
+
 	std::array<std::unique_ptr<FabrikMesh>, 10> grass_sprouts;
 };
 
