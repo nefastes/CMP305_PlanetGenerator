@@ -62,6 +62,9 @@
     <ClInclude Include="FabrikMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ImprovedNoise.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\light_ps.hlsl">

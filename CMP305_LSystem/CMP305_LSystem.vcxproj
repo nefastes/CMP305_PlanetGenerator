@@ -177,6 +177,7 @@
     <ClInclude Include="App1.h" />
     <ClInclude Include="CylinderMesh.h" />
     <ClInclude Include="FabrikMesh.h" />
+    <ClInclude Include="ImprovedNoise.h" />
     <ClInclude Include="Leaf.h" />
     <ClInclude Include="LightShader.h" />
     <ClInclude Include="LineMesh.h" />

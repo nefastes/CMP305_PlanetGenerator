@@ -9,7 +9,10 @@ App1::App1() :
 	lSystem_UseCylinders(false),
 	fabrik_goal_position(XMFLOAT3(0.f, 1.f, 0.f)),
 	fabrik_n_segments(1),
-	fabrik_total_length(1.f)
+	fabrik_total_length(1.f),
+	fabrik_animate_with_noise(false),
+	fabrik_animate_noise_offset(0.f, 0.f),
+	gui_debug_noise(0.f)
 {
 }
 
@@ -51,7 +54,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	//
 	for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
 	{
-		grass_sprouts[i] = std::make_unique<FabrikMesh>(renderer->getDevice(), renderer->getDeviceContext(), XMFLOAT3(1.f, 0.f, (float)i), XMFLOAT3(0.f, .0f, .0f), 4, .5f);
+		grass_sprouts[i] = std::make_unique<FabrikMesh>(renderer->getDevice(), renderer->getDeviceContext(), XMFLOAT3(1.f, 0.f, (float)i), XMFLOAT3(0.f, .5f, .5f), 4, .5f);
 		grass_sprouts[i]->update(renderer->getDevice(), renderer->getDeviceContext());
 	}
 }
@@ -69,6 +72,7 @@ App1::~App1()
 bool App1::frame()
 {
 	bool result;
+	float frame_time = timer->getTime();
 
 	result = BaseApplication::frame();
 	if (!result)
@@ -76,6 +80,26 @@ bool App1::frame()
 		return false;
 	}
 	
+	if (fabrik_animate_with_noise)
+	{
+		fabrik_animate_noise_offset.x += frame_time;
+		fabrik_animate_noise_offset.y += frame_time;
+		float noise = (float)ImprovedNoise::noise((double)fabrik_animate_noise_offset.x, (double)fabrik_animate_noise_offset.y);
+		//noise -= .5f;	//The above already returns a values from -0.5 to 0.5
+		gui_debug_noise = noise;
+		fabrik_goal_position = XMFLOAT3(0.f + noise, 1.f, 0.f + noise);
+		fabrik_mesh->setGoal(fabrik_goal_position);
+		//fabrik_mesh->setGoal(XMFLOAT3(fabrik_goal_position.x + noise, fabrik_goal_position.y, fabrik_goal_position.z + noise));
+		fabrik_goal_position.y = .5f;
+		for (unsigned char i = 0u; i < grass_sprouts.size(); ++i)
+		{
+			XMFLOAT3 new_pos;
+			XMStoreFloat3(&new_pos, XMVectorAdd(XMLoadFloat3(&grass_sprouts[i]->getPosition()), XMLoadFloat3(&fabrik_goal_position)));
+			grass_sprouts[i]->setGoal(new_pos);
+			grass_sprouts[i]->update(renderer->getDevice(), renderer->getDeviceContext());
+		}
+		fabrik_goal_position.y = 1.f;
+	}
 	fabrik_mesh->update(renderer->getDevice(), renderer->getDeviceContext());
 
 	// Render the graphics.
@@ -217,8 +241,11 @@ void App1::gui()
 	if (ImGui::CollapsingHeader("FABRIK"))
 	{
 		ImGui::Text("Goal:");
-		if(ImGui::SliderFloat3("Position", &fabrik_goal_position.x, -10.f, 10.f))
-			fabrik_mesh->setGoal(fabrik_goal_position);
+		ImGui::Checkbox("Animate with Noise", &fabrik_animate_with_noise);
+		ImGui::Text("Debug Noise Value: %.2f", gui_debug_noise);
+		if(!fabrik_animate_with_noise)
+			if(ImGui::SliderFloat3("Position", &fabrik_goal_position.x, -10.f, 10.f))
+				fabrik_mesh->setGoal(fabrik_goal_position);
 
 		ImGui::Separator();
 

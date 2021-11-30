@@ -3,6 +3,7 @@
 #define _APP1_H
 
 // Includes
+#pragma once
 #include "DXF.h"	// include dxframework
 #include "LightShader.h"
 #include "LineMesh.h"
@@ -10,6 +11,7 @@
 #include "Leaf.h"
 #include "LSystem.h"
 #include "FabrikMesh.h"
+#include "ImprovedNoise.h"
 #include <memory>
 #include <vector>
 #include <array>
@@ -47,6 +49,9 @@ private:
 
 	std::unique_ptr<SphereMesh> fabrik_goal_mesh;
 	XMFLOAT3 fabrik_goal_position;
+	bool fabrik_animate_with_noise;
+	XMFLOAT2 fabrik_animate_noise_offset;
+	float gui_debug_noise;
 	int fabrik_n_segments;
 	float fabrik_total_length;
 	std::unique_ptr<FabrikMesh> fabrik_mesh;
