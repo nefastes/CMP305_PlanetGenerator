@@ -1,9 +1,11 @@
 #include "CubeSphereMesh.h"
 
 CubeSphereMesh::CubeSphereMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution, float radius,
-	float noise_frequency, float noise_amplitude, XMFLOAT3 noise_center) :
-	resolution_(resolution), radius_(radius), noise_frequency_(noise_frequency), noise_amplitude_(noise_amplitude),
-	noise_center_(noise_center)
+	float noise_frequency, float noise_amplitude, XMFLOAT3 noise_center, float noise_min_threshold, unsigned noise_layers,
+	float noise_layer_roughness, float noise_layer_persistence) :
+	resolution_(resolution), radius_(radius), noise_frequency_(noise_frequency), noise_amplitude_(noise_amplitude), noise_center_(noise_center),
+	noise_min_threshold_(noise_min_threshold), noise_layer_iterations_(noise_layers), noise_layer_roughness_(noise_layer_roughness),
+	noise_layer_persistence_(noise_layer_persistence)
 {
 	initBuffers(device);
 }
@@ -13,14 +15,18 @@ CubeSphereMesh::~CubeSphereMesh()
 	BaseMesh::~BaseMesh();
 }
 
-void CubeSphereMesh::Regenrate(ID3D11Device* device, unsigned resolution, float radius, float noise_frequency,
-	float noise_amplitude, XMFLOAT3 noise_center)
+void CubeSphereMesh::Regenrate(ID3D11Device* device, unsigned resolution, float radius, float noise_frequency, float noise_amplitude,
+	XMFLOAT3 noise_center, float noise_min_threshold, unsigned noise_layers, float noise_layer_roughness, float noise_layer_persistence)
 {
 	resolution_ = resolution;
 	radius_ = radius;
 	noise_frequency_ = noise_frequency;
 	noise_amplitude_ = noise_amplitude;
 	noise_center_ = noise_center;
+	noise_min_threshold_ = noise_min_threshold;
+	noise_layer_iterations_ = noise_layers;
+	noise_layer_roughness_ = noise_layer_roughness;
+	noise_layer_persistence_ = noise_layer_persistence;
 	initBuffers(device);
 }
 
@@ -60,19 +66,30 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 	int v = 0;	// vertex counter
 	int i = 0;	// index counter
 	//Lambda to calculate a new vertex position and normal base on it's intended position on a cube
-	auto calculate_vertex_pos_and_normal = [&](float cube_pos_x, float cube_pos_y, float cube_pos_z) -> void {
-		//Where the vertex would be on a normal cube
-		XMFLOAT3 cube_vertex_pos = XMFLOAT3(cube_pos_x, cube_pos_y, cube_pos_z);			// Bottom left. -1. -1. 0
+	auto calculate_vertex_pos_and_normal = [&](VertexType& v, const XMFLOAT3& cube_vertex_pos) -> void {
 		//Create a vector from the center to the position
 		XMVECTOR target_position = XMLoadFloat3(&cube_vertex_pos);
 		//Calculate its unit normal with the calculated vector
 		target_position = XMVector3Normalize(target_position);
-		XMStoreFloat3(&vertices[v].normal, target_position);
+		XMStoreFloat3(&v.normal, target_position);
 		//Assign the new vertex position
 		target_position *= radius_;
-		float noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.z) * noise_frequency_);
+		float noise_value = 0.f;
+		float f = noise_frequency_;
+		float a = noise_amplitude_;
+		for(unsigned i = 0u; i < noise_layer_iterations_; ++i)
+		{
+			noise_value += .5f * a * (static_cast<float>(ImprovedNoise::noise(
+				(XMVectorGetX(target_position) + noise_center_.x) * f,
+				(XMVectorGetY(target_position) + noise_center_.y) * f,
+				(XMVectorGetZ(target_position) + noise_center_.z) * f)) + 1.f
+			);
+			f *= noise_layer_roughness_;
+			a *= noise_layer_persistence_;
+		}
+		noise_value = max(0.f, noise_value - noise_min_threshold_);
 		XMVECTOR noise_displacement = target_position * noise_value;
-		XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+		XMStoreFloat3(&v.position, target_position + noise_displacement);
 	};
 
 	//front face
@@ -81,8 +98,11 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		for (unsigned x = 0; x < resolution_; x++)	// for each quad in the x direction
 		{
 			// Load the vertex array with data.
-			//0
-			calculate_vertex_pos_and_normal(xstart, ystart - yincrement, -1.0f);			// Bottom left. -1. -1. 0
+			// 0 - Bottom left. -1. -1. 0
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart, ystart - yincrement, -1.0f)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -90,8 +110,11 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			v++;
 			i++;
 
-			//1
-			calculate_vertex_pos_and_normal(xstart + xincrement, ystart, -1.0f);			// Top right.	1.0, 1.0 0.0
+			//1 - Top right.	1.0, 1.0 0.0
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart + xincrement, ystart, -1.0f)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -99,8 +122,11 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			v++;
 			i++;
 
-			//2
-			calculate_vertex_pos_and_normal(xstart, ystart, -1.0f);			// Top left.	-1.0, 1.0
+			//2 - Top left.	-1.0, 1.0
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart, ystart, -1.0f)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv);
 
@@ -108,8 +134,11 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			v++;
 			i++;
 
-			//0
-			calculate_vertex_pos_and_normal(xstart, ystart - yincrement, -1.0f);			// Bottom left. -1. -1. 0
+			//0 - Bottom left. -1. -1. 0
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart, ystart - yincrement, -1.0f)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -117,8 +146,11 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			v++;
 			i++;
 
-			//3
-			calculate_vertex_pos_and_normal(xstart + xincrement, ystart - yincrement, -1.0f);			// Bottom right.	1.0, -1.0, 0.0
+			//3 - Bottom right.	1.0, -1.0, 0.0
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart + xincrement, ystart - yincrement, -1.0f)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv + txvinc);
 
@@ -126,8 +158,11 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			v++;
 			i++;
 
-			//1
-			calculate_vertex_pos_and_normal(xstart + xincrement, ystart, -1.0f);			// Top right.	1.0, 1.0 0.0
+			//1 - Top right.	1.0, 1.0 0.0
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart + xincrement, ystart, -1.0f)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -161,7 +196,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			calculate_vertex_pos_and_normal(xstart, ystart - yincrement, 1.0f);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart, ystart - yincrement, 1.0f)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -170,7 +208,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(xstart - xincrement, ystart, 1.0f);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart - xincrement, ystart, 1.0f)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -179,7 +220,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			calculate_vertex_pos_and_normal(xstart, ystart, 1.0f);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart, ystart, 1.0f)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv);
 
@@ -188,7 +232,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			calculate_vertex_pos_and_normal(xstart, ystart - yincrement, 1.0f);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart, ystart - yincrement, 1.0f)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -197,7 +244,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			calculate_vertex_pos_and_normal(xstart - xincrement, ystart - yincrement, 1.0f);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart - xincrement, ystart - yincrement, 1.0f)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv + txvinc);
 
@@ -206,7 +256,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(xstart - xincrement, ystart, 1.0f);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart - xincrement, ystart, 1.0f)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -240,7 +293,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			calculate_vertex_pos_and_normal(1.0f, ystart - yincrement, xstart);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(1.0f, ystart - yincrement, xstart)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -249,7 +305,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(1.0f, ystart, xstart + xincrement);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(1.0f, ystart, xstart + xincrement)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -258,7 +317,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			calculate_vertex_pos_and_normal(1.0f, ystart, xstart);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(1.0f, ystart, xstart)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv);
 
@@ -267,7 +329,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			calculate_vertex_pos_and_normal(1.0f, ystart - yincrement, xstart);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(1.0f, ystart - yincrement, xstart)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -276,7 +341,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			calculate_vertex_pos_and_normal(1.0f, ystart - yincrement, xstart + xincrement);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(1.0f, ystart - yincrement, xstart + xincrement)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv + txvinc);
 
@@ -285,7 +353,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(1.0f, ystart, xstart + xincrement);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(1.0f, ystart, xstart + xincrement)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -319,7 +390,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			calculate_vertex_pos_and_normal(-1.0f, ystart - yincrement, xstart);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(-1.0f, ystart - yincrement, xstart)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -328,7 +402,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(-1.0f, ystart, xstart - xincrement);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(-1.0f, ystart, xstart - xincrement)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -337,7 +414,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			calculate_vertex_pos_and_normal(-1.0f, ystart, xstart);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(-1.0f, ystart, xstart)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv);
 
@@ -346,7 +426,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			calculate_vertex_pos_and_normal(-1.0f, ystart - yincrement, xstart);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(-1.0f, ystart - yincrement, xstart)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -355,7 +438,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			calculate_vertex_pos_and_normal(-1.0f, ystart - yincrement, xstart - xincrement);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(-1.0f, ystart - yincrement, xstart - xincrement)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv + txvinc);
 
@@ -364,7 +450,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(-1.0f, ystart, xstart - xincrement);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(-1.0f, ystart, xstart - xincrement)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -398,7 +487,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			calculate_vertex_pos_and_normal(xstart, 1.0f, ystart - yincrement);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart, 1.0f, ystart - yincrement)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -407,7 +499,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(xstart + xincrement, 1.0f, ystart);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart + xincrement, 1.0f, ystart)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -416,7 +511,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			calculate_vertex_pos_and_normal(xstart, 1.0f, ystart);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart, 1.0f, ystart)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv);
 
@@ -425,7 +523,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			calculate_vertex_pos_and_normal(xstart, 1.0f, ystart - yincrement);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart, 1.0f, ystart - yincrement)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -434,7 +535,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			calculate_vertex_pos_and_normal(xstart + xincrement, 1.0f, ystart - yincrement);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart + xincrement, 1.0f, ystart - yincrement)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv + txvinc);
 
@@ -443,7 +547,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(xstart + xincrement, 1.0f, ystart);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart + xincrement, 1.0f, ystart)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -478,7 +585,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			calculate_vertex_pos_and_normal(xstart, -1.0f, ystart + yincrement);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart, -1.0f, ystart + yincrement)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -487,7 +597,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(xstart + xincrement, -1.0f, ystart);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart + xincrement, -1.0f, ystart)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -496,7 +609,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			calculate_vertex_pos_and_normal(xstart, -1.0f, ystart);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart, -1.0f, ystart)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv);
 
@@ -505,7 +621,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			calculate_vertex_pos_and_normal(xstart, -1.0f, ystart + yincrement);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart, -1.0f, ystart + yincrement)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -514,7 +633,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			calculate_vertex_pos_and_normal(xstart + xincrement, -1.0f, ystart + yincrement);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart + xincrement, -1.0f, ystart + yincrement)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv + txvinc);
 
@@ -523,7 +645,10 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(xstart + xincrement, -1.0f, ystart);
+			calculate_vertex_pos_and_normal(
+				vertices[v],
+				XMFLOAT3(xstart + xincrement, -1.0f, ystart)
+			);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 

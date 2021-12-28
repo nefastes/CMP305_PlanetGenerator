@@ -72,6 +72,10 @@ private:
 	float gui_noise_frequency;
 	float gui_noise_amplitude;
 	XMFLOAT3 gui_noise_center;
+	float gui_noise_min_threshold;
+	int gui_noise_layer_iterations;
+	float gui_noise_layer_roughness;
+	float gui_noise_layer_persistence;
 };
 
 #endif
