@@ -73,6 +73,10 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 			grass_sprouts[i * sideSize + j]->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
 		}
 	}
+
+
+	//Planet
+	planet_mesh = std::make_unique<CubeSphereMesh>(renderer->getDevice(), renderer->getDeviceContext(), 20, 5.f);
 }
 
 App1::~App1()
@@ -151,7 +155,7 @@ bool App1::render()
 	worldMatrix = renderer->getWorldMatrix();
 	viewMatrix = camera->getViewMatrix();
 	projectionMatrix = renderer->getProjectionMatrix();
-	if (m_Line->getIndexCount() > 0) {
+	/*if (m_Line->getIndexCount() > 0) {
 		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
 		m_Line->sendData(renderer->getDeviceContext());
 		shader->render(renderer->getDeviceContext(), m_Line->getIndexCount());
@@ -195,7 +199,13 @@ bool App1::render()
 	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z));
 	fabrik_goal_mesh->sendData(renderer->getDeviceContext());
 	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
-	shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());
+	shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());*/
+
+
+	worldMatrix = renderer->getWorldMatrix();
+	planet_mesh->sendData(renderer->getDeviceContext());
+	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
+	shader->render(renderer->getDeviceContext(), planet_mesh->getIndexCount());
 
 	// Render GUI
 	gui();

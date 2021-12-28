@@ -165,6 +165,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App1.cpp" />
+    <ClCompile Include="CubeSphereMesh.cpp" />
     <ClCompile Include="CylinderMesh.cpp" />
     <ClCompile Include="FabrikMesh.cpp" />
     <ClCompile Include="Leaf.cpp" />
@@ -175,6 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App1.h" />
+    <ClInclude Include="CubeSphereMesh.h" />
     <ClInclude Include="CylinderMesh.h" />
     <ClInclude Include="FabrikMesh.h" />
     <ClInclude Include="ImprovedNoise.h" />

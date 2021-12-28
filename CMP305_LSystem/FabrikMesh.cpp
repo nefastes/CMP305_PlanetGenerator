@@ -143,7 +143,7 @@ void FabrikMesh::BuildCylinders(ID3D11Device* device, ID3D11DeviceContext* devic
 	vertices.clear();
 	indices.clear();
 
-	float height = total_length, bottomRadius = .05f, topRadius = 0.f;
+	float height = total_length, bottomRadius = .025f, topRadius = 0.f;
 	int stacks = n_segments, slices = 4;
 
 	float stackHeight = height / stacks;

@@ -14,11 +14,10 @@
 #include "LSystem.h"
 #include "FabrikMesh.h"
 #include "ImprovedNoise.h"
+#include "CubeSphereMesh.h"
 #include <memory>
 #include <vector>
 #include <array>
-
-using std::unique_ptr;
 
 class App1 : public BaseApplication
 {
@@ -37,17 +36,17 @@ private:
 	void BuildLine2D();
 	void BuildTree3D();
 
-	unique_ptr<LightShader>					shader;
-	unique_ptr<LineMesh>					m_Line;
+	std::unique_ptr<LightShader>			shader;
+	std::unique_ptr<LineMesh>				m_Line;
 	std::unique_ptr<PlaneMesh>				m_ground;
 	std::vector<unique_ptr<CylinderMesh>>	m_3dtree_branches;
 	std::vector<unique_ptr<Leaf>>			m_3dtree_leaves;
 
-	unique_ptr<Light>		light;
-	LSystem					lSystem;
-	int						lSystem_nIterations;
-	int						lSystem_BuildType;
-	bool					lSystem_UseCylinders;
+	std::unique_ptr<Light>		light;
+	LSystem						lSystem;
+	int							lSystem_nIterations;
+	int							lSystem_BuildType;
+	bool						lSystem_UseCylinders;
 
 
 	std::unique_ptr<SphereMesh> fabrik_goal_mesh;
@@ -65,6 +64,9 @@ private:
 	bool fabrik_render_cylinders;
 
 	std::array<std::unique_ptr<FabrikMesh>, 400> grass_sprouts;
+
+	//Planet
+	std::unique_ptr<CubeSphereMesh> planet_mesh;
 };
 
 #endif
