@@ -6,5 +6,5 @@ C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.2
           [
               _Ty=double
           ]
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(71): message : see reference to function template instantiation 'std::unique_ptr<FabrikMesh,std::default_delete<FabrikMesh>> std::make_unique<FabrikMesh,ID3D11Device*,ID3D11DeviceContext*,DirectX::XMFLOAT3,DirectX::XMFLOAT3,int,double,0>(ID3D11Device *&&,ID3D11DeviceContext *&&,DirectX::XMFLOAT3 &&,DirectX::XMFLOAT3 &&,int &&,double &&)' being compiled
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(73): message : see reference to function template instantiation 'std::unique_ptr<FabrikMesh,std::default_delete<FabrikMesh>> std::make_unique<FabrikMesh,ID3D11Device*,ID3D11DeviceContext*,DirectX::XMFLOAT3,DirectX::XMFLOAT3,int,double,0>(ID3D11Device *&&,ID3D11DeviceContext *&&,DirectX::XMFLOAT3 &&,DirectX::XMFLOAT3 &&,int &&,double &&)' being compiled
   CMP305_LSystem.vcxproj -> C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Debug\CMP305_LSystem.exe

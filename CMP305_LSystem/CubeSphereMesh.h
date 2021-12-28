@@ -7,6 +7,8 @@ public:
 	CubeSphereMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution = 20u, float radius = 1.f);
 	~CubeSphereMesh();
 
+	void Regenrate(ID3D11Device* device, unsigned resolution = 20u, float radius = 1.f);
+
 private:
 	void initBuffers(ID3D11Device* device);
 	unsigned resolution_;

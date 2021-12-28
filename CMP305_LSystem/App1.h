@@ -67,6 +67,8 @@ private:
 
 	//Planet
 	std::unique_ptr<CubeSphereMesh> planet_mesh;
+	int gui_planet_resolution;
+	float gui_planet_radius;
 };
 
 #endif

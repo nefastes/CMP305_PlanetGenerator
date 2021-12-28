@@ -11,6 +11,13 @@ CubeSphereMesh::~CubeSphereMesh()
 	BaseMesh::~BaseMesh();
 }
 
+void CubeSphereMesh::Regenrate(ID3D11Device* device, unsigned resolution, float radius)
+{
+	resolution_ = resolution;
+	radius_ = radius;
+	initBuffers(device);
+}
+
 void CubeSphereMesh::initBuffers(ID3D11Device* device)
 {
 	//The cube sphere is generated with a radius of radius_ around the center (0,0,0)

@@ -15,7 +15,9 @@ App1::App1() :
 	gui_debug_noise(0.f),
 	gui_wind_direction(XMFLOAT2(1.f, 0.f)),
 	gui_wind_strength(1.f),
-	fabrik_render_cylinders(false)
+	fabrik_render_cylinders(false),
+	gui_planet_resolution(20),
+	gui_planet_radius(1.f)
 {
 }
 
@@ -76,7 +78,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 
 	//Planet
-	planet_mesh = std::make_unique<CubeSphereMesh>(renderer->getDevice(), renderer->getDeviceContext(), 20, 5.f);
+	planet_mesh = std::make_unique<CubeSphereMesh>(renderer->getDevice(), renderer->getDeviceContext(), gui_planet_resolution, gui_planet_radius);
 }
 
 App1::~App1()
@@ -204,7 +206,7 @@ bool App1::render()
 
 	worldMatrix = renderer->getWorldMatrix();
 	planet_mesh->sendData(renderer->getDeviceContext());
-	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
+	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
 	shader->render(renderer->getDeviceContext(), planet_mesh->getIndexCount());
 
 	// Render GUI
@@ -314,6 +316,14 @@ void App1::gui()
 			fabrik_mesh->setSegmentCount(fabrik_n_segments);
 		if (ImGui::SliderFloat("Total Length", &fabrik_total_length, .1f, 5.f))
 			fabrik_mesh->setLength(fabrik_total_length);
+	}
+	if (ImGui::CollapsingHeader("Planet Settings"))
+	{
+		bool need_generation = false;
+		need_generation |= ImGui::SliderInt("Resolution", &gui_planet_resolution, 1, 100);
+		need_generation |= ImGui::SliderFloat("Radius", &gui_planet_radius, .001f, 100.f);
+		if (need_generation)
+			planet_mesh->Regenrate(renderer->getDevice(), static_cast<unsigned>(gui_planet_resolution), gui_planet_radius);
 	}
 
 	// Render UI
