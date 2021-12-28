@@ -69,6 +69,9 @@ private:
 	std::unique_ptr<CubeSphereMesh> planet_mesh;
 	int gui_planet_resolution;
 	float gui_planet_radius;
+	float gui_noise_frequency;
+	float gui_noise_amplitude;
+	XMFLOAT3 gui_noise_center;
 };
 
 #endif

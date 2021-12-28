@@ -17,7 +17,10 @@ App1::App1() :
 	gui_wind_strength(1.f),
 	fabrik_render_cylinders(false),
 	gui_planet_resolution(20),
-	gui_planet_radius(1.f)
+	gui_planet_radius(1.f),
+	gui_noise_frequency(0.f),
+	gui_noise_amplitude(0.f),
+	gui_noise_center(XMFLOAT3(0.f, 0.f, 0.f))
 {
 }
 
@@ -78,7 +81,8 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 
 	//Planet
-	planet_mesh = std::make_unique<CubeSphereMesh>(renderer->getDevice(), renderer->getDeviceContext(), gui_planet_resolution, gui_planet_radius);
+	planet_mesh = std::make_unique<CubeSphereMesh>(renderer->getDevice(), renderer->getDeviceContext(), gui_planet_resolution, gui_planet_radius,
+		gui_noise_frequency, gui_noise_amplitude, gui_noise_center);
 }
 
 App1::~App1()
@@ -321,9 +325,13 @@ void App1::gui()
 	{
 		bool need_generation = false;
 		need_generation |= ImGui::SliderInt("Resolution", &gui_planet_resolution, 1, 100);
-		need_generation |= ImGui::SliderFloat("Radius", &gui_planet_radius, .001f, 100.f);
+		need_generation |= ImGui::SliderFloat("Radius", &gui_planet_radius, .1f, 100.f);
+		need_generation |= ImGui::SliderFloat("Noise frequency", &gui_noise_frequency, 0.f, 1.f);
+		need_generation |= ImGui::SliderFloat("Noise amplitude", &gui_noise_amplitude, 0.f, 10.f);
+		need_generation |= ImGui::SliderFloat3("Noise center", &gui_noise_center.x, -10.f, 10.f);
 		if (need_generation)
-			planet_mesh->Regenrate(renderer->getDevice(), static_cast<unsigned>(gui_planet_resolution), gui_planet_radius);
+			planet_mesh->Regenrate(renderer->getDevice(), static_cast<unsigned>(gui_planet_resolution), gui_planet_radius,
+				gui_noise_frequency, gui_noise_amplitude, gui_noise_center);
 	}
 
 	// Render UI
