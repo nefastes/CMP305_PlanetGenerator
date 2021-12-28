@@ -59,11 +59,21 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 	//Counters
 	int v = 0;	// vertex counter
 	int i = 0;	// index counter
-	//Vectors
-	XMFLOAT3 cube_vertex_pos;
-	XMVECTOR target_position;
-	float noise_value;
-	XMVECTOR noise_displacement;
+	//Lambda to calculate a new vertex position and normal base on it's intended position on a cube
+	auto calculate_vertex_pos_and_normal = [&](float cube_pos_x, float cube_pos_y, float cube_pos_z) -> void {
+		//Where the vertex would be on a normal cube
+		XMFLOAT3 cube_vertex_pos = XMFLOAT3(cube_pos_x, cube_pos_y, cube_pos_z);			// Bottom left. -1. -1. 0
+		//Create a vector from the center to the position
+		XMVECTOR target_position = XMLoadFloat3(&cube_vertex_pos);
+		//Calculate its unit normal with the calculated vector
+		target_position = XMVector3Normalize(target_position);
+		XMStoreFloat3(&vertices[v].normal, target_position);
+		//Assign the new vertex position
+		target_position *= radius_;
+		float noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.z) * noise_frequency_);
+		XMVECTOR noise_displacement = target_position * noise_value;
+		XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+	};
 
 	//front face
 	for (unsigned y = 0; y < resolution_; y++)	// for each quad in the y direction
@@ -72,18 +82,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart, ystart - yincrement, -1.0f);			// Bottom left. -1. -1. 0
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart, ystart - yincrement, -1.0f);			// Bottom left. -1. -1. 0
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -92,18 +91,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart + xincrement, ystart, -1.0f);			// Top right.	1.0, 1.0 0.0
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart + xincrement, ystart, -1.0f);			// Top right.	1.0, 1.0 0.0
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -112,18 +100,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart, ystart, -1.0f);			// Top left.	-1.0, 1.0
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart, ystart, -1.0f);			// Top left.	-1.0, 1.0
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv);
 
@@ -132,18 +109,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart, ystart - yincrement, -1.0f);			// Bottom left. -1. -1. 0
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart, ystart - yincrement, -1.0f);			// Bottom left. -1. -1. 0
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -152,18 +118,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart + xincrement, ystart - yincrement, -1.0f);			// Bottom right.	1.0, -1.0, 0.0
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart + xincrement, ystart - yincrement, -1.0f);			// Bottom right.	1.0, -1.0, 0.0
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv + txvinc);
 
@@ -172,18 +127,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart + xincrement, ystart, -1.0f);			// Top right.	1.0, 1.0 0.0
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart + xincrement, ystart, -1.0f);			// Top right.	1.0, 1.0 0.0
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -217,18 +161,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart, ystart - yincrement, 1.0f);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart, ystart - yincrement, 1.0f);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -237,18 +170,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart - xincrement, ystart, 1.0f);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart - xincrement, ystart, 1.0f);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -257,18 +179,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart, ystart, 1.0f);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart, ystart, 1.0f);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv);
 
@@ -277,18 +188,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart, ystart - yincrement, 1.0f);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart, ystart - yincrement, 1.0f);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -297,18 +197,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart - xincrement, ystart - yincrement, 1.0f);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart - xincrement, ystart - yincrement, 1.0f);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv + txvinc);
 
@@ -317,18 +206,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart - xincrement, ystart, 1.0f);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart - xincrement, ystart, 1.0f);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -362,18 +240,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(1.0f, ystart - yincrement, xstart);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(1.0f, ystart - yincrement, xstart);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -382,18 +249,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(1.0f, ystart, xstart + xincrement);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(1.0f, ystart, xstart + xincrement);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -402,18 +258,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(1.0f, ystart, xstart);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(1.0f, ystart, xstart);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv);
 
@@ -422,18 +267,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(1.0f, ystart - yincrement, xstart);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(1.0f, ystart - yincrement, xstart);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -442,18 +276,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(1.0f, ystart - yincrement, xstart + xincrement);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(1.0f, ystart - yincrement, xstart + xincrement);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv + txvinc);
 
@@ -462,18 +285,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(1.0f, ystart, xstart + xincrement);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(1.0f, ystart, xstart + xincrement);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -507,18 +319,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(-1.0f, ystart - yincrement, xstart);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(-1.0f, ystart - yincrement, xstart);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -527,18 +328,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(-1.0f, ystart, xstart - xincrement);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(-1.0f, ystart, xstart - xincrement);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -547,18 +337,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(-1.0f, ystart, xstart);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(-1.0f, ystart, xstart);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv);
 
@@ -567,18 +346,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(-1.0f, ystart - yincrement, xstart);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(-1.0f, ystart - yincrement, xstart);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -587,18 +355,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(-1.0f, ystart - yincrement, xstart - xincrement);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(-1.0f, ystart - yincrement, xstart - xincrement);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv + txvinc);
 
@@ -607,18 +364,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(-1.0f, ystart, xstart - xincrement);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(-1.0f, ystart, xstart - xincrement);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -652,18 +398,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart, 1.0f, ystart - yincrement);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart, 1.0f, ystart - yincrement);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -672,18 +407,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart + xincrement, 1.0f, ystart);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart + xincrement, 1.0f, ystart);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -692,18 +416,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart, 1.0f, ystart);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart, 1.0f, ystart);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv);
 
@@ -712,18 +425,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart, 1.0f, ystart - yincrement);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart, 1.0f, ystart - yincrement);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -732,18 +434,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart + xincrement, 1.0f, ystart - yincrement);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart + xincrement, 1.0f, ystart - yincrement);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv + txvinc);
 
@@ -752,18 +443,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart + xincrement, 1.0f, ystart);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart + xincrement, 1.0f, ystart);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -798,18 +478,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart, -1.0f, ystart + yincrement);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart, -1.0f, ystart + yincrement);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -818,18 +487,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart + xincrement, -1.0f, ystart);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart + xincrement, -1.0f, ystart);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
@@ -838,18 +496,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart, -1.0f, ystart);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart, -1.0f, ystart);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv);
 
@@ -858,18 +505,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart, -1.0f, ystart + yincrement);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart, -1.0f, ystart + yincrement);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu, txv + txvinc);
 
@@ -878,18 +514,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart + xincrement, -1.0f, ystart + yincrement);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart + xincrement, -1.0f, ystart + yincrement);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv + txvinc);
 
@@ -898,18 +523,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			//Where the vertex would be on a normal cube
-			cube_vertex_pos = XMFLOAT3(xstart + xincrement, -1.0f, ystart);
-			//Create a vector from the center to the position
-			target_position = XMLoadFloat3(&cube_vertex_pos);
-			//Calculate its unit normal with the calculated vector
-			target_position = XMVector3Normalize(target_position);
-			XMStoreFloat3(&vertices[v].normal, target_position);
-			//Assign the new vertex position
-			target_position *= radius_;
-			noise_value = noise_amplitude_ * static_cast<float>(ImprovedNoise::noise((XMVectorGetX(target_position) + noise_center_.x) * noise_frequency_, (XMVectorGetY(target_position) + noise_center_.y) * noise_frequency_, (XMVectorGetZ(target_position)) + noise_center_.x) * noise_frequency_);
-			noise_displacement = target_position * noise_value;
-			XMStoreFloat3(&vertices[v].position, target_position + noise_displacement);
+			calculate_vertex_pos_and_normal(xstart + xincrement, -1.0f, ystart);
 			//Assign the texture coordinate
 			vertices[v].texture = XMFLOAT2(txu + txuinc, txv);
 
