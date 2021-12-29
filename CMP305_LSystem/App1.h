@@ -18,6 +18,7 @@
 #include <memory>
 #include <vector>
 #include <array>
+#include <time.h>
 
 class App1 : public BaseApplication
 {
@@ -67,15 +68,7 @@ private:
 
 	//Planet
 	std::unique_ptr<CubeSphereMesh> planet_mesh;
-	int gui_planet_resolution;
-	float gui_planet_radius;
-	float gui_noise_frequency;
-	float gui_noise_amplitude;
-	XMFLOAT3 gui_noise_center;
-	float gui_noise_min_threshold;
-	int gui_noise_layer_iterations;
-	float gui_noise_layer_roughness;
-	float gui_noise_layer_persistence;
+	int gui_noise_n_layers;
 };
 
 #endif

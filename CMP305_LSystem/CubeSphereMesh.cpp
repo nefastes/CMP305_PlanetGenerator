@@ -3,10 +3,19 @@
 CubeSphereMesh::CubeSphereMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution, float radius,
 	float noise_frequency, float noise_amplitude, XMFLOAT3 noise_center, float noise_min_threshold, unsigned noise_layers,
 	float noise_layer_roughness, float noise_layer_persistence) :
-	resolution_(resolution), radius_(radius), noise_frequency_(noise_frequency), noise_amplitude_(noise_amplitude), noise_center_(noise_center),
-	noise_min_threshold_(noise_min_threshold), noise_layer_iterations_(noise_layers), noise_layer_roughness_(noise_layer_roughness),
-	noise_layer_persistence_(noise_layer_persistence)
+	resolution_(resolution), radius_(radius)
 {
+	noise_layers_.push_back(
+		std::make_unique<NoiseLayerSettings>(
+			noise_layer_roughness,
+			noise_layer_persistence,
+			noise_layers,
+			noise_center,
+			noise_frequency,
+			noise_amplitude,
+			noise_min_threshold
+		)
+	);
 	initBuffers(device);
 }
 
@@ -15,18 +24,8 @@ CubeSphereMesh::~CubeSphereMesh()
 	BaseMesh::~BaseMesh();
 }
 
-void CubeSphereMesh::Regenrate(ID3D11Device* device, unsigned resolution, float radius, float noise_frequency, float noise_amplitude,
-	XMFLOAT3 noise_center, float noise_min_threshold, unsigned noise_layers, float noise_layer_roughness, float noise_layer_persistence)
+void CubeSphereMesh::Regenrate(ID3D11Device* device)
 {
-	resolution_ = resolution;
-	radius_ = radius;
-	noise_frequency_ = noise_frequency;
-	noise_amplitude_ = noise_amplitude;
-	noise_center_ = noise_center;
-	noise_min_threshold_ = noise_min_threshold;
-	noise_layer_iterations_ = noise_layers;
-	noise_layer_roughness_ = noise_layer_roughness;
-	noise_layer_persistence_ = noise_layer_persistence;
 	initBuffers(device);
 }
 
@@ -66,29 +65,48 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 	int v = 0;	// vertex counter
 	int i = 0;	// index counter
 	//Lambda to calculate a new vertex position and normal base on it's intended position on a cube
-	auto calculate_vertex_pos_and_normal = [&](VertexType& v, const XMFLOAT3& cube_vertex_pos) -> void {
+	auto calculate_vertex_pos = [&](VertexType& v, const XMFLOAT3& cube_vertex_pos) -> void {
 		//Create a vector from the center to the position
 		XMVECTOR target_position = XMLoadFloat3(&cube_vertex_pos);
 		//Calculate its unit normal with the calculated vector
-		target_position = XMVector3Normalize(target_position);
+		XMVECTOR unit_target_position = XMVector3Normalize(target_position);
 		XMStoreFloat3(&v.normal, target_position);
 		//Assign the new vertex position
-		target_position *= radius_;
-		float noise_value = 0.f;
-		float f = noise_frequency_;
-		float a = noise_amplitude_;
-		for(unsigned i = 0u; i < noise_layer_iterations_; ++i)
+		target_position = unit_target_position * radius_;
+		float total_noise = 0.f;
+		float layer_mask = 1.f; //Start with 1.f in case the user ticks the box for layer 0
+		for (unsigned i = 0u; i < noise_layers_.size(); ++i)
 		{
-			noise_value += .5f * a * (static_cast<float>(ImprovedNoise::noise(
-				(XMVectorGetX(target_position) + noise_center_.x) * f,
-				(XMVectorGetY(target_position) + noise_center_.y) * f,
-				(XMVectorGetZ(target_position) + noise_center_.z) * f)) + 1.f
-			);
-			f *= noise_layer_roughness_;
-			a *= noise_layer_persistence_;
+			//Get the current layer settings
+			NoiseLayerSettings* layer = noise_layers_[i].get();
+			//If the layer is deactivated, continue to deal with the next layer
+			if (!layer->layer_active_)continue;
+			//Setup base noise values
+			float noise_value = 0.f;
+			float f = layer->noise_base_frequency_;
+			float a = layer->noise_base_amplitude_;
+			//For every sub layers, calculate the FBM noise
+			for (unsigned j = 0u; j < layer->layer_nSubLayers_; ++j)
+			{
+				noise_value += .5f * a * (static_cast<float>(ImprovedNoise::noise(
+					(XMVectorGetX(target_position) + layer->layer_center_.x) * f,
+					(XMVectorGetY(target_position) + layer->layer_center_.y) * f,
+					(XMVectorGetZ(target_position) + layer->layer_center_.z) * f)) + 1.f);
+				f *= layer->layer_roughness_;
+				a *= layer->layer_persistence_;
+			}
+			//This operation reduces the displacement dictated by the threshold value
+			//It ensures it cannot go negative, so the minimum distance from the center will be radius_
+			//This allows to create round water and noisy continents
+			noise_value = max(0.f, noise_value - layer->noise_min_threshold_);
+			//Add the calculated noise value to the total noise
+			total_noise += noise_value * (layer->layer_use_previous_layer_as_mask_ ? layer_mask : 1.f);
+			//Update the mask with this layer's noise value for the next layer
+			layer_mask = noise_value;
 		}
-		noise_value = max(0.f, noise_value - noise_min_threshold_);
-		XMVECTOR noise_displacement = target_position * noise_value;
+		//The noise displacement is a simple multiplication of the unit vector of the vertex position from the center with the total noise
+		XMVECTOR noise_displacement = unit_target_position * total_noise;
+		//The final position is then the traget position (unit vector * radius_) plus noisy displacement
 		XMStoreFloat3(&v.position, target_position + noise_displacement);
 	};
 
@@ -99,7 +117,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			// 0 - Bottom left. -1. -1. 0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart, ystart - yincrement, -1.0f)
 			);
@@ -111,7 +129,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1 - Top right.	1.0, 1.0 0.0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart + xincrement, ystart, -1.0f)
 			);
@@ -123,7 +141,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2 - Top left.	-1.0, 1.0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart, ystart, -1.0f)
 			);
@@ -135,7 +153,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0 - Bottom left. -1. -1. 0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart, ystart - yincrement, -1.0f)
 			);
@@ -147,7 +165,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3 - Bottom right.	1.0, -1.0, 0.0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart + xincrement, ystart - yincrement, -1.0f)
 			);
@@ -159,7 +177,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1 - Top right.	1.0, 1.0 0.0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart + xincrement, ystart, -1.0f)
 			);
@@ -196,7 +214,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart, ystart - yincrement, 1.0f)
 			);
@@ -208,7 +226,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart - xincrement, ystart, 1.0f)
 			);
@@ -220,7 +238,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart, ystart, 1.0f)
 			);
@@ -232,7 +250,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart, ystart - yincrement, 1.0f)
 			);
@@ -244,7 +262,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart - xincrement, ystart - yincrement, 1.0f)
 			);
@@ -256,7 +274,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart - xincrement, ystart, 1.0f)
 			);
@@ -293,7 +311,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(1.0f, ystart - yincrement, xstart)
 			);
@@ -305,7 +323,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(1.0f, ystart, xstart + xincrement)
 			);
@@ -317,7 +335,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(1.0f, ystart, xstart)
 			);
@@ -329,7 +347,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(1.0f, ystart - yincrement, xstart)
 			);
@@ -341,7 +359,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(1.0f, ystart - yincrement, xstart + xincrement)
 			);
@@ -353,7 +371,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(1.0f, ystart, xstart + xincrement)
 			);
@@ -390,7 +408,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(-1.0f, ystart - yincrement, xstart)
 			);
@@ -402,7 +420,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(-1.0f, ystart, xstart - xincrement)
 			);
@@ -414,7 +432,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(-1.0f, ystart, xstart)
 			);
@@ -426,7 +444,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(-1.0f, ystart - yincrement, xstart)
 			);
@@ -438,7 +456,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(-1.0f, ystart - yincrement, xstart - xincrement)
 			);
@@ -450,7 +468,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(-1.0f, ystart, xstart - xincrement)
 			);
@@ -487,7 +505,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart, 1.0f, ystart - yincrement)
 			);
@@ -499,7 +517,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart + xincrement, 1.0f, ystart)
 			);
@@ -511,7 +529,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart, 1.0f, ystart)
 			);
@@ -523,7 +541,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart, 1.0f, ystart - yincrement)
 			);
@@ -535,7 +553,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart + xincrement, 1.0f, ystart - yincrement)
 			);
@@ -547,7 +565,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart + xincrement, 1.0f, ystart)
 			);
@@ -585,7 +603,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			//0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart, -1.0f, ystart + yincrement)
 			);
@@ -597,7 +615,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart + xincrement, -1.0f, ystart)
 			);
@@ -609,7 +627,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//1
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart, -1.0f, ystart)
 			);
@@ -621,7 +639,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//0
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart, -1.0f, ystart + yincrement)
 			);
@@ -633,7 +651,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//3
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart + xincrement, -1.0f, ystart + yincrement)
 			);
@@ -645,7 +663,7 @@ void CubeSphereMesh::initBuffers(ID3D11Device* device)
 			i++;
 
 			//2
-			calculate_vertex_pos_and_normal(
+			calculate_vertex_pos(
 				vertices[v],
 				XMFLOAT3(xstart + xincrement, -1.0f, ystart)
 			);

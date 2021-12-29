@@ -1,7 +1,6 @@
 // Lab1.cpp
 // Lab 1 example, simple coloured triangle mesh
 #include "App1.h"
-#include <stack>
 App1::App1() :
 	lSystem("A"),
 	lSystem_nIterations(1),
@@ -16,15 +15,7 @@ App1::App1() :
 	gui_wind_direction(XMFLOAT2(1.f, 0.f)),
 	gui_wind_strength(1.f),
 	fabrik_render_cylinders(false),
-	gui_planet_resolution(20),
-	gui_planet_radius(2.f),
-	gui_noise_frequency(.0375f),
-	gui_noise_amplitude(1.f),
-	gui_noise_center(XMFLOAT3(0.f, 0.f, 0.f)),
-	gui_noise_min_threshold(0.f),
-	gui_noise_layer_iterations(1),
-	gui_noise_layer_roughness(2.f),
-	gui_noise_layer_persistence(.5f)
+	gui_noise_n_layers(1)
 {
 }
 
@@ -32,7 +23,12 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 {
 	// Call super/parent init function (required!)
 	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
+	
+	//Seed the rng
+	//srand(1);
+	srand(time(0));
 
+	//Load textures
 	textureMgr->loadTexture(L"grass", L"res/grass.png");
 	textureMgr->loadTexture(L"wood", L"res/wood.png");
 
@@ -85,9 +81,8 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 
 	//Planet
-	planet_mesh = std::make_unique<CubeSphereMesh>(renderer->getDevice(), renderer->getDeviceContext(), static_cast<unsigned>(gui_planet_resolution),
-		gui_planet_radius, gui_noise_frequency, gui_noise_amplitude, gui_noise_center, gui_noise_min_threshold,
-		static_cast<unsigned>(gui_noise_layer_iterations), gui_noise_layer_roughness, gui_noise_layer_persistence);
+	planet_mesh = std::make_unique<CubeSphereMesh>(renderer->getDevice(), renderer->getDeviceContext(), 20u, 2.f, .4f, 1.f,
+		XMFLOAT3(0.f, 0.f, 0.f), 1.f, 4, 2.f, .5f);
 }
 
 App1::~App1()
@@ -330,23 +325,40 @@ void App1::gui()
 	{
 		bool need_generation = false;
 		ImGui::Text("Mesh Settings:");
-		need_generation |= ImGui::SliderInt("Resolution", &gui_planet_resolution, 1, 100);
-		need_generation |= ImGui::SliderFloat("Radius", &gui_planet_radius, .1f, 100.f);
-		ImGui::Separator();
-		ImGui::Text("Noise Settings:");
-		need_generation |= ImGui::SliderFloat("Noise frequency", &gui_noise_frequency, 0.f, 1.f);
-		need_generation |= ImGui::SliderFloat("Noise amplitude", &gui_noise_amplitude, 0.f, 10.f);
-		need_generation |= ImGui::SliderFloat3("Noise center", &gui_noise_center.x, -10.f, 10.f);
-		need_generation |= ImGui::SliderFloat("Min threshold", &gui_noise_min_threshold, 0.f, 10.f);
-		ImGui::Separator();
-		ImGui::Text("Noise Layer Settings:");
-		need_generation |= ImGui::SliderInt("N layers", &gui_noise_layer_iterations, 1, 20);
-		need_generation |= ImGui::SliderFloat("Layer roughness", &gui_noise_layer_roughness, 0.f, 10.f);
-		need_generation |= ImGui::SliderFloat("Layer persistence", &gui_noise_layer_persistence, 0.f, 1.f);
-		if (need_generation)
-			planet_mesh->Regenrate(renderer->getDevice(), static_cast<unsigned>(gui_planet_resolution), gui_planet_radius,
-				gui_noise_frequency, gui_noise_amplitude, gui_noise_center, gui_noise_min_threshold,
-				static_cast<unsigned>(gui_noise_layer_iterations), gui_noise_layer_roughness, gui_noise_layer_persistence);
+		need_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
+		need_generation |= ImGui::SliderFloat("Radius", planet_mesh->getRadius(), .1f, 100.f);
+		std::vector<std::unique_ptr<NoiseLayerSettings>>* noise_layers = planet_mesh->getNoiseLayers();
+		if (ImGui::SliderInt("Number of Layers", &gui_noise_n_layers, 1, 10))
+		{
+			int n_elements = noise_layers->size();
+			for(int i = n_elements; i < gui_noise_n_layers; ++i) noise_layers->push_back(std::make_unique<NoiseLayerSettings>());
+			for (int i = n_elements; i > gui_noise_n_layers; --i) noise_layers->pop_back();
+		}
+		for (unsigned i = 0u; i < noise_layers->size(); ++i)
+		{
+			if (ImGui::TreeNode(std::to_string(i + 1u).insert(0, "Layer ").c_str()))
+			{
+				ImGui::PushID(i);
+				NoiseLayerSettings* current_layer = noise_layers->at(i).get();
+
+				need_generation |= ImGui::Checkbox("Layer Active", &current_layer->layer_active_);
+				need_generation |= ImGui::Checkbox("Use Previous Layer As Mask", &current_layer->layer_use_previous_layer_as_mask_);
+				ImGui::Text("Noise Settings:");
+				need_generation |= ImGui::SliderFloat("Noise frequency", &current_layer->noise_base_frequency_, 0.f, 1.f);
+				need_generation |= ImGui::SliderFloat("Noise amplitude", &current_layer->noise_base_amplitude_, 0.f, 10.f);
+				need_generation |= ImGui::SliderFloat3("Noise center", &current_layer->layer_center_.x, -10.f, 10.f);
+				need_generation |= ImGui::SliderFloat("Min threshold", &current_layer->noise_min_threshold_, 0.f, 10.f);
+				ImGui::Text("Sub Layers Settings:");
+				need_generation |= ImGui::SliderInt("N layers", (int*)&current_layer->layer_nSubLayers_, 1, 20);
+				need_generation |= ImGui::SliderFloat("Layer roughness", &current_layer->layer_roughness_, 0.f, 10.f);
+				need_generation |= ImGui::SliderFloat("Layer persistence", &current_layer->layer_persistence_, 0.f, 1.f);
+
+				ImGui::Separator();
+				ImGui::PopID();
+				ImGui::TreePop();
+			}
+		}
+		if (need_generation) planet_mesh->Regenrate(renderer->getDevice());
 	}
 
 	// Render UI
