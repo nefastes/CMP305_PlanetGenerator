@@ -39,7 +39,7 @@
     <ClCompile Include="FabrikMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CubeSphereMesh.cpp">
+    <ClCompile Include="PlanetMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,7 +68,10 @@
     <ClInclude Include="ImprovedNoise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CubeSphereMesh.h">
+    <ClInclude Include="PlanetMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtraAlgorithms.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

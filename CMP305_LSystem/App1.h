@@ -14,7 +14,7 @@
 #include "LSystem.h"
 #include "FabrikMesh.h"
 #include "ImprovedNoise.h"
-#include "CubeSphereMesh.h"
+#include "PlanetMesh.h"
 #include <memory>
 #include <vector>
 #include <array>
@@ -67,7 +67,7 @@ private:
 	std::array<std::unique_ptr<FabrikMesh>, 400> grass_sprouts;
 
 	//Planet
-	std::unique_ptr<CubeSphereMesh> planet_mesh;
+	std::unique_ptr<PlanetMesh> planet_mesh;
 	int gui_noise_n_layers;
 };
 

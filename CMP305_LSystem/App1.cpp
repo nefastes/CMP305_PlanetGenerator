@@ -81,7 +81,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 
 	//Planet
-	planet_mesh = std::make_unique<CubeSphereMesh>(renderer->getDevice(), renderer->getDeviceContext(), 20u, 2.f, .4f, 1.f,
+	planet_mesh = std::make_unique<PlanetMesh>(renderer->getDevice(), renderer->getDeviceContext(), 20u, 2.f, .4f, 1.f,
 		XMFLOAT3(0.f, 0.f, 0.f), 1.f, 4, 2.f, .5f);
 }
 
@@ -325,6 +325,7 @@ void App1::gui()
 	{
 		bool need_generation = false;
 		ImGui::Text("Mesh Settings:");
+		need_generation |= ImGui::Checkbox("Debug Generation", planet_mesh->getDebug());
 		need_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
 		need_generation |= ImGui::SliderFloat("Radius", planet_mesh->getRadius(), .1f, 100.f);
 		std::vector<std::unique_ptr<NoiseLayerSettings>>* noise_layers = planet_mesh->getNoiseLayers();
@@ -344,10 +345,17 @@ void App1::gui()
 				need_generation |= ImGui::Checkbox("Layer Active", &current_layer->layer_active_);
 				need_generation |= ImGui::Checkbox("Use Previous Layer As Mask", &current_layer->layer_use_previous_layer_as_mask_);
 				ImGui::Text("Noise Settings:");
-				need_generation |= ImGui::SliderFloat("Noise frequency", &current_layer->noise_base_frequency_, 0.f, 1.f);
-				need_generation |= ImGui::SliderFloat("Noise amplitude", &current_layer->noise_base_amplitude_, 0.f, 10.f);
-				need_generation |= ImGui::SliderFloat3("Noise center", &current_layer->layer_center_.x, -10.f, 10.f);
+				NoiseType* current_type = &current_layer->noise_type_;
+				need_generation |= ImGui::Combo("Noise Type", (int*)current_type, "FBM\0Rigid\0\0");
+				need_generation |= ImGui::DragFloat("Noise frequency", &current_layer->noise_base_frequency_, 0.001f);
+				need_generation |= ImGui::DragFloat("Noise amplitude", &current_layer->noise_base_amplitude_, 0.01f);
+				need_generation |= ImGui::DragFloat3("Noise center", &current_layer->layer_center_.x, .1f);
 				need_generation |= ImGui::SliderFloat("Min threshold", &current_layer->noise_min_threshold_, 0.f, 10.f);
+				if (*current_type == NoiseType::RIGID)
+				{
+					need_generation |= ImGui::DragFloat("Sharpness", &current_layer->rigid_noise_sharpness_, 0.01f);
+					need_generation |= ImGui::DragFloat("LOD Multiplier", &current_layer->rigid_noise_LOD_multiplier_, 0.01f);
+				}
 				ImGui::Text("Sub Layers Settings:");
 				need_generation |= ImGui::SliderInt("N layers", (int*)&current_layer->layer_nSubLayers_, 1, 20);
 				need_generation |= ImGui::SliderFloat("Layer roughness", &current_layer->layer_roughness_, 0.f, 10.f);
