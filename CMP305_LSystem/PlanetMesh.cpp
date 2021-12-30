@@ -724,74 +724,89 @@ init_buffers:
 	//Recalculate normals
 	//Set up normals for the face
 	for (int k = 0; k < v - 3; k += 3) {
-		//Calculate the plane normals
-		XMFLOAT3 a, b, c;	//Three corner vertices
-		XMFLOAT3 cross;		//Cross product
-		float mag;			//Magnitude of the cross product
-		XMFLOAT3 ab;		//Edges
-		XMFLOAT3 ac;
-		//Bottom left, top right, top left
-		//Bottom left, bottom right, top right
-		//First vertex
-		a = vertices[k].position;
-		b = vertices[k + 1].position;
-		c = vertices[k + 2].position;
+		for (int l = 0; l < 3; ++l)
+		{
+			//Calculate the plane normals
+			XMFLOAT3 a, b, c;	//Three corner vertices
+			XMFLOAT3 cross;		//Cross product result
+			float mag;			//Magnitude of the cross product (so we can normalize it)
+			XMFLOAT3 ab;		//Edge 1
+			XMFLOAT3 ac;		//Edge 2
 
-		//Two edges
-		ab = XMFLOAT3(c.x - a.x, c.y - a.y, c.z - a.z);
-		ac = XMFLOAT3(b.x - a.x, b.y - a.y, b.z - a.z);
+			//Retrieve the three vertices
+			a = vertices[k + warp(l, 0, 2)].position;
+			b = vertices[k + warp(l + 1, 0, 2)].position;
+			c = vertices[k + warp(l + 2, 0, 2)].position;
 
-		//Calculate the cross product
-		cross.x = ab.y * ac.z - ab.z * ac.y;
-		cross.y = ab.z * ac.x - ab.x * ac.z;
-		cross.z = ab.x * ac.y - ab.y * ac.x;
-		mag = (cross.x * cross.x) + (cross.y * cross.y) + (cross.z * cross.z);
-		mag = sqrtf(mag);
-		cross.x /= mag;
-		cross.y /= mag;
-		cross.z /= mag;
-		vertices[k].normal = cross;
+			//Two edges
+			ab = XMFLOAT3(c.x - a.x, c.y - a.y, c.z - a.z);
+			ac = XMFLOAT3(b.x - a.x, b.y - a.y, b.z - a.z);
 
-		//Second vertex
-		a = vertices[k + 1].position;
-		b = vertices[k + 2].position;
-		c = vertices[k].position;
-
-		//Two edges
-		ab = XMFLOAT3(c.x - a.x, c.y - a.y, c.z - a.z);
-		ac = XMFLOAT3(b.x - a.x, b.y - a.y, b.z - a.z);
-
-		//Calculate the cross product
-		cross.x = ab.y * ac.z - ab.z * ac.y;
-		cross.y = ab.z * ac.x - ab.x * ac.z;
-		cross.z = ab.x * ac.y - ab.y * ac.x;
-		mag = (cross.x * cross.x) + (cross.y * cross.y) + (cross.z * cross.z);
-		mag = sqrtf(mag);
-		cross.x /= mag;
-		cross.y /= mag;
-		cross.z /= mag;
-		vertices[k + 1].normal = cross;
-
-		//Third vertex
-		a = vertices[k + 2].position;
-		b = vertices[k].position;
-		c = vertices[k + 1].position;
-
-		//Two edges
-		ab = XMFLOAT3(c.x - a.x, c.y - a.y, c.z - a.z);
-		ac = XMFLOAT3(b.x - a.x, b.y - a.y, b.z - a.z);
-
-		//Calculate the cross product
-		cross.x = ab.y * ac.z - ab.z * ac.y;
-		cross.y = ab.z * ac.x - ab.x * ac.z;
-		cross.z = ab.x * ac.y - ab.y * ac.x;
-		mag = (cross.x * cross.x) + (cross.y * cross.y) + (cross.z * cross.z);
-		mag = sqrtf(mag);
-		cross.x /= mag;
-		cross.y /= mag;
-		cross.z /= mag;
-		vertices[k + 2].normal = cross;
+			//Calculate the cross product
+			cross.x = ab.y * ac.z - ab.z * ac.y;
+			cross.y = ab.z * ac.x - ab.x * ac.z;
+			cross.z = ab.x * ac.y - ab.y * ac.x;
+			mag = (cross.x * cross.x) + (cross.y * cross.y) + (cross.z * cross.z);
+			mag = sqrtf(mag);
+			cross.x /= mag;
+			cross.y /= mag;
+			cross.z /= mag;
+			vertices[k + l].normal = cross;
+		}
 	}
+	////Smooth the normals by averaging the normals from the surrounding planes
+	//XMFLOAT3 smoothedNormal(0, 1, 0);
+	//for (int k = 0; k < v - 3; k += 3) {
+	//	smoothedNormal.x = 0;
+	//	smoothedNormal.y = 0;
+	//	smoothedNormal.z = 0;
+	//	float count = 0;
+	//	//Left planes
+	//	if ((i - 1) >= 0) {
+	//		//Top planes
+	//		if ((j) < (resolution - 1)) {
+	//			smoothedNormal.x += vertices[j * resolution + (i - 1)].normal.x;
+	//			smoothedNormal.y += vertices[j * resolution + (i - 1)].normal.y;
+	//			smoothedNormal.z += vertices[j * resolution + (i - 1)].normal.z;
+	//			count++;
+	//		}
+	//		//Bottom planes
+	//		if ((j - 1) >= 0) {
+	//			smoothedNormal.x += vertices[(j - 1) * resolution + (i - 1)].normal.x;
+	//			smoothedNormal.y += vertices[(j - 1) * resolution + (i - 1)].normal.y;
+	//			smoothedNormal.z += vertices[(j - 1) * resolution + (i - 1)].normal.z;
+	//			count++;
+	//		}
+	//	}
+	//	//right planes
+	//	if ((i) < (resolution - 1)) {
+
+	//		//Top planes
+	//		if ((j) < (resolution - 1)) {
+	//			smoothedNormal.x += vertices[j * resolution + i].normal.x;
+	//			smoothedNormal.y += vertices[j * resolution + i].normal.y;
+	//			smoothedNormal.z += vertices[j * resolution + i].normal.z;
+	//			count++;
+	//		}
+	//		//Bottom planes
+	//		if ((j - 1) >= 0) {
+	//			smoothedNormal.x += vertices[(j - 1) * resolution + i].normal.x;
+	//			smoothedNormal.y += vertices[(j - 1) * resolution + i].normal.y;
+	//			smoothedNormal.z += vertices[(j - 1) * resolution + i].normal.z;
+	//			count++;
+	//		}
+	//	}
+	//	smoothedNormal.x /= count;
+	//	smoothedNormal.y /= count;
+	//	smoothedNormal.z /= count;
+
+	//	float mag = sqrt((smoothedNormal.x * smoothedNormal.x) + (smoothedNormal.y * smoothedNormal.y) + (smoothedNormal.z * smoothedNormal.z));
+	//	smoothedNormal.x /= mag;
+	//	smoothedNormal.y /= mag;
+	//	smoothedNormal.z /= mag;
+
+	//	vertices[k].normal = smoothedNormal;
+	//}
 
 	// Set up the description of the static vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
