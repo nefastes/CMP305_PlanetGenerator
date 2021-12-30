@@ -15,7 +15,8 @@ App1::App1() :
 	gui_wind_direction(XMFLOAT2(1.f, 0.f)),
 	gui_wind_strength(1.f),
 	fabrik_render_cylinders(false),
-	gui_noise_n_layers(1)
+	gui_planet_noise_n_layers(1),
+	gui_planet_rotation(XMFLOAT3(0.f, 0.f, 0.f))
 {
 }
 
@@ -34,10 +35,11 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	// Create Mesh object and shader object
 	m_ground = std::make_unique<PlaneMesh>(renderer->getDevice(), renderer->getDeviceContext());
-	m_Line.reset( new LineMesh( renderer->getDevice(), renderer->getDeviceContext() ) );
-	shader.reset( new LightShader( renderer->getDevice(), hwnd ) );
+	m_Line = std::make_unique<LineMesh>(renderer->getDevice(), renderer->getDeviceContext());
+	light_shader = std::make_unique<LightShader>(renderer->getDevice(), hwnd);
+	planet_shader = std::make_unique<PlanetShader>(renderer->getDevice(), hwnd);
 
-	light.reset( new Light );
+	light = std::make_unique<Light>();
 	light->setAmbientColour(0.25f, 0.25f, 0.25f, 1.0f);
 	light->setDiffuseColour(0.75f, 0.75f, 0.75f, 1.0f);
 	light->setDirection(1.0f, -.7f, 0.0f);
@@ -81,7 +83,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 
 	//Planet
-	planet_mesh = std::make_unique<PlanetMesh>(renderer->getDevice(), renderer->getDeviceContext(), 20u, 2.f, .4f, 1.f,
+	planet_mesh = std::make_unique<PlanetMesh>(renderer->getDevice(), renderer->getDeviceContext(), 20u, .4f, 1.f,
 		XMFLOAT3(0.f, 0.f, 0.f), 1.f, 4, 2.f, .5f);
 }
 
@@ -162,56 +164,56 @@ bool App1::render()
 	viewMatrix = camera->getViewMatrix();
 	projectionMatrix = renderer->getProjectionMatrix();
 	/*if (m_Line->getIndexCount() > 0) {
-		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+		light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
 		m_Line->sendData(renderer->getDeviceContext());
-		shader->render(renderer->getDeviceContext(), m_Line->getIndexCount());
+		light_shader->render(renderer->getDeviceContext(), m_Line->getIndexCount());
 	}
 	for (unsigned i = 0u; i < m_3dtree_branches.size(); ++i)
 	{
-		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix * m_3dtree_branches[i]->m_Transform, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
+		light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix * m_3dtree_branches[i]->m_Transform, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
 		m_3dtree_branches[i]->sendData(renderer->getDeviceContext());
-		shader->render(renderer->getDeviceContext(), m_3dtree_branches[i]->getIndexCount());
+		light_shader->render(renderer->getDeviceContext(), m_3dtree_branches[i]->getIndexCount());
 	}
 	for (unsigned i = 0u; i < m_3dtree_leaves.size(); ++i)
 	{
-		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix * m_3dtree_leaves[i]->m_Transform, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+		light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix * m_3dtree_leaves[i]->m_Transform, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
 		m_3dtree_leaves[i]->sendData(renderer->getDeviceContext());
-		shader->render(renderer->getDeviceContext(), m_3dtree_leaves[i]->getIndexCount());
+		light_shader->render(renderer->getDeviceContext(), m_3dtree_leaves[i]->getIndexCount());
 	}
 
 	if (fabrik_mesh->getIndexCount())
 	{
 		if(fabrik_render_cylinders) fabrik_mesh->sendData(renderer->getDeviceContext(), D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		else fabrik_mesh->sendData(renderer->getDeviceContext());
-		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
-		shader->render(renderer->getDeviceContext(), fabrik_mesh->getIndexCount());
+		light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+		light_shader->render(renderer->getDeviceContext(), fabrik_mesh->getIndexCount());
 	}
 
 	for (unsigned i = 0u; i < grass_sprouts.size(); ++i)
 	{
 		if (fabrik_render_cylinders) grass_sprouts[i]->sendData(renderer->getDeviceContext(), D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		else grass_sprouts[i]->sendData(renderer->getDeviceContext());
-		shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
-		shader->render(renderer->getDeviceContext(), grass_sprouts[i]->getIndexCount());
+		light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+		light_shader->render(renderer->getDeviceContext(), grass_sprouts[i]->getIndexCount());
 	}
 
 	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixScaling(.125f, .125f, .125f));
 	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(-5.f, 0.f, -5.f));
 	m_ground->sendData(renderer->getDeviceContext());
-	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
-	shader->render(renderer->getDeviceContext(), m_ground->getIndexCount());
+	light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+	light_shader->render(renderer->getDeviceContext(), m_ground->getIndexCount());
 	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(5.f, 0.f, 5.f));
 
 	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z));
 	fabrik_goal_mesh->sendData(renderer->getDeviceContext());
-	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
-	shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());*/
+	light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
+	light_shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());*/
 
 
-	worldMatrix = renderer->getWorldMatrix();
+	worldMatrix = XMMatrixRotationRollPitchYaw(gui_planet_rotation.y, gui_planet_rotation.z, gui_planet_rotation.x);
 	planet_mesh->sendData(renderer->getDeviceContext());
-	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
-	shader->render(renderer->getDeviceContext(), planet_mesh->getIndexCount());
+	planet_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, light.get(), planet_mesh->getMaxNoise());
+	planet_shader->render(renderer->getDeviceContext(), planet_mesh->getIndexCount());
 
 	// Render GUI
 	gui();
@@ -327,13 +329,14 @@ void App1::gui()
 		ImGui::Text("Mesh Settings:");
 		need_generation |= ImGui::Checkbox("Debug Generation", planet_mesh->getDebug());
 		need_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
-		need_generation |= ImGui::SliderFloat("Radius", planet_mesh->getRadius(), .1f, 100.f);
+		//need_generation |= ImGui::SliderFloat("Radius", planet_mesh->getRadius(), .1f, 100.f);
+		ImGui::DragFloat3("Roll Pitch Yaw", &gui_planet_rotation.x, .01f);
 		std::vector<std::unique_ptr<NoiseLayerSettings>>* noise_layers = planet_mesh->getNoiseLayers();
-		if (ImGui::SliderInt("Number of Layers", &gui_noise_n_layers, 1, 10))
+		if (ImGui::SliderInt("Number of Layers", &gui_planet_noise_n_layers, 1, 10))
 		{
 			int n_elements = noise_layers->size();
-			for(int i = n_elements; i < gui_noise_n_layers; ++i) noise_layers->push_back(std::make_unique<NoiseLayerSettings>());
-			for (int i = n_elements; i > gui_noise_n_layers; --i) noise_layers->pop_back();
+			for(int i = n_elements; i < gui_planet_noise_n_layers; ++i) noise_layers->push_back(std::make_unique<NoiseLayerSettings>());
+			for (int i = n_elements; i > gui_planet_noise_n_layers; --i) noise_layers->pop_back();
 		}
 		for (unsigned i = 0u; i < noise_layers->size(); ++i)
 		{

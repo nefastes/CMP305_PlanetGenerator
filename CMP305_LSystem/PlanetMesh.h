@@ -59,7 +59,7 @@ struct NoiseLayerSettings {
 class PlanetMesh : public BaseMesh
 {
 public:
-	PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution = 20u, float radius = 1.f,
+	PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution = 20u,
 		float noise_frequency = 0.f, float noise_amplitude = 0.f, XMFLOAT3 noise_center = XMFLOAT3(0.f, 0.f, 0.f),
 		float noise_min_threshold = 0.f, unsigned noise_layers = 1u, float noise_layer_roughness = 2.f, float noise_layer_persistence = .5f);
 	~PlanetMesh();
@@ -67,17 +67,19 @@ public:
 	void Regenrate(ID3D11Device* device);
 
 	void setResolution(const unsigned& r) { resolution_ = r; }
-	void setRadius(const float& r) { radius_ = r; }
+	//void setRadius(const float& r) { radius_ = r; }
 	void setDebug(const bool& d) { debug_building_ = d; }
 	unsigned* getResolution() { return &resolution_; }
-	float* getRadius() { return &radius_; }
+	//float* getRadius() { return &radius_; }
 	bool* getDebug() { return &debug_building_; }
 	std::vector<std::unique_ptr<NoiseLayerSettings>>* getNoiseLayers() { return &noise_layers_; }
+	const float& getMaxNoise() { return noise_max; }
 
 private:
 	void initBuffers(ID3D11Device* device);
 	unsigned resolution_;
 	float radius_;
+
 	//A simple boolean that will allow to create the vertices of one face only
 	//Useful when building the planet on a high resolution
 	//This can be done better by multhreading the generation on the CPU or moving it to the GPU
@@ -85,5 +87,9 @@ private:
 
 	//At least one layer will exist, it is initialised in the constructor
 	std::vector<std::unique_ptr<NoiseLayerSettings>> noise_layers_;
+
+	//A float to keep track of the highest noise values
+	//Used in the shader to determine colour gradients
+	float noise_max;
 };
 

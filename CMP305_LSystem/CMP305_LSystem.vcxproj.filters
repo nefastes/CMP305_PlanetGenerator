@@ -13,6 +13,24 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Geometry">
+      <UniqueIdentifier>{a0b0d1ca-557e-45ee-9a56-68ebba93dca3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Algorithms">
+      <UniqueIdentifier>{d67834c7-1632-4de9-862e-e00273ea21a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Shaders">
+      <UniqueIdentifier>{a6d474e5-712a-4d32-87e3-f020b68fbb3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Geometry">
+      <UniqueIdentifier>{eb197bbd-2c63-4d9d-8617-4d0540f620ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Algorithms">
+      <UniqueIdentifier>{46c5bbd2-5682-4198-940b-f7aeb1882648}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shaders">
+      <UniqueIdentifier>{b38699c6-9c33-4c64-a78f-dec2536fbdb5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App1.cpp">
@@ -21,58 +39,64 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LightShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LineMesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CylinderMesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Leaf.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="PlanetMesh.cpp">
+      <Filter>Source Files\Geometry</Filter>
     </ClCompile>
     <ClCompile Include="FabrikMesh.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Geometry</Filter>
     </ClCompile>
-    <ClCompile Include="PlanetMesh.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="CylinderMesh.cpp">
+      <Filter>Source Files\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Leaf.cpp">
+      <Filter>Source Files\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="LineMesh.cpp">
+      <Filter>Source Files\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="LSystem.cpp">
+      <Filter>Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="LightShader.cpp">
+      <Filter>Source Files\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="PlanetShader.cpp">
+      <Filter>Source Files\Shaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LightShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LineMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LSystem.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="PlanetMesh.h">
+      <Filter>Header Files\Geometry</Filter>
     </ClInclude>
     <ClInclude Include="CylinderMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Leaf.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Geometry</Filter>
     </ClInclude>
     <ClInclude Include="FabrikMesh.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Geometry</Filter>
     </ClInclude>
-    <ClInclude Include="ImprovedNoise.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PlanetMesh.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="LineMesh.h">
+      <Filter>Header Files\Geometry</Filter>
     </ClInclude>
     <ClInclude Include="ExtraAlgorithms.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="ImprovedNoise.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="LSystem.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="Leaf.h">
+      <Filter>Header Files\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="LightShader.h">
+      <Filter>Header Files\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="PlanetShader.h">
+      <Filter>Header Files\Shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -80,6 +104,12 @@
       <Filter>Resource Files</Filter>
     </FxCompile>
     <FxCompile Include="shaders\light_vs.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="planet_ps.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="planet_vs.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>

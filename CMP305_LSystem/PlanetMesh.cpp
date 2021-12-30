@@ -1,9 +1,9 @@
 #include "PlanetMesh.h"
 
-PlanetMesh::PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution, float radius,
+PlanetMesh::PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution,
 	float noise_frequency, float noise_amplitude, XMFLOAT3 noise_center, float noise_min_threshold, unsigned noise_layers,
 	float noise_layer_roughness, float noise_layer_persistence) :
-	resolution_(resolution), radius_(radius), debug_building_(false)
+	resolution_(resolution), radius_(1.f), debug_building_(false), noise_max(0.f)
 {
 	noise_layers_.push_back(
 		std::make_unique<NoiseLayerSettings>(
@@ -131,6 +131,8 @@ void PlanetMesh::initBuffers(ID3D11Device* device)
 			//Update the mask with this layer's noise value for the next layer
 			layer_mask = noise_value;
 		}
+		//If the noise is the highest so far, store it
+		noise_max = (total_noise > noise_max) * total_noise + !(total_noise > noise_max) * noise_max;
 		//The noise displacement is a simple multiplication of the unit vector of the vertex position from the center with the total noise
 		XMVECTOR noise_displacement = unit_target_position * total_noise;
 		//The final position is then the traget position (unit vector * radius_) plus noisy displacement
@@ -754,59 +756,6 @@ init_buffers:
 			vertices[k + l].normal = cross;
 		}
 	}
-	////Smooth the normals by averaging the normals from the surrounding planes
-	//XMFLOAT3 smoothedNormal(0, 1, 0);
-	//for (int k = 0; k < v - 3; k += 3) {
-	//	smoothedNormal.x = 0;
-	//	smoothedNormal.y = 0;
-	//	smoothedNormal.z = 0;
-	//	float count = 0;
-	//	//Left planes
-	//	if ((i - 1) >= 0) {
-	//		//Top planes
-	//		if ((j) < (resolution - 1)) {
-	//			smoothedNormal.x += vertices[j * resolution + (i - 1)].normal.x;
-	//			smoothedNormal.y += vertices[j * resolution + (i - 1)].normal.y;
-	//			smoothedNormal.z += vertices[j * resolution + (i - 1)].normal.z;
-	//			count++;
-	//		}
-	//		//Bottom planes
-	//		if ((j - 1) >= 0) {
-	//			smoothedNormal.x += vertices[(j - 1) * resolution + (i - 1)].normal.x;
-	//			smoothedNormal.y += vertices[(j - 1) * resolution + (i - 1)].normal.y;
-	//			smoothedNormal.z += vertices[(j - 1) * resolution + (i - 1)].normal.z;
-	//			count++;
-	//		}
-	//	}
-	//	//right planes
-	//	if ((i) < (resolution - 1)) {
-
-	//		//Top planes
-	//		if ((j) < (resolution - 1)) {
-	//			smoothedNormal.x += vertices[j * resolution + i].normal.x;
-	//			smoothedNormal.y += vertices[j * resolution + i].normal.y;
-	//			smoothedNormal.z += vertices[j * resolution + i].normal.z;
-	//			count++;
-	//		}
-	//		//Bottom planes
-	//		if ((j - 1) >= 0) {
-	//			smoothedNormal.x += vertices[(j - 1) * resolution + i].normal.x;
-	//			smoothedNormal.y += vertices[(j - 1) * resolution + i].normal.y;
-	//			smoothedNormal.z += vertices[(j - 1) * resolution + i].normal.z;
-	//			count++;
-	//		}
-	//	}
-	//	smoothedNormal.x /= count;
-	//	smoothedNormal.y /= count;
-	//	smoothedNormal.z /= count;
-
-	//	float mag = sqrt((smoothedNormal.x * smoothedNormal.x) + (smoothedNormal.y * smoothedNormal.y) + (smoothedNormal.z * smoothedNormal.z));
-	//	smoothedNormal.x /= mag;
-	//	smoothedNormal.y /= mag;
-	//	smoothedNormal.z /= mag;
-
-	//	vertices[k].normal = smoothedNormal;
-	//}
 
 	// Set up the description of the static vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;

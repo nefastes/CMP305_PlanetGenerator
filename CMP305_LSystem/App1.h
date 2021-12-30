@@ -8,6 +8,7 @@
 #pragma once
 #include "DXF.h"	// include dxframework
 #include "LightShader.h"
+#include "PlanetShader.h"
 #include "LineMesh.h"
 #include "CylinderMesh.h"
 #include "Leaf.h"
@@ -37,7 +38,8 @@ private:
 	void BuildLine2D();
 	void BuildTree3D();
 
-	std::unique_ptr<LightShader>			shader;
+	std::unique_ptr<LightShader>			light_shader;
+	std::unique_ptr<PlanetShader>			planet_shader;
 	std::unique_ptr<LineMesh>				m_Line;
 	std::unique_ptr<PlaneMesh>				m_ground;
 	std::vector<unique_ptr<CylinderMesh>>	m_3dtree_branches;
@@ -68,7 +70,8 @@ private:
 
 	//Planet
 	std::unique_ptr<PlanetMesh> planet_mesh;
-	int gui_noise_n_layers;
+	int gui_planet_noise_n_layers;
+	XMFLOAT3 gui_planet_rotation;
 };
 
 #endif
