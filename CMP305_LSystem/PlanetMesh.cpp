@@ -3,7 +3,7 @@
 PlanetMesh::PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution, float radius,
 	float noise_frequency, float noise_amplitude, XMFLOAT3 noise_center, float noise_min_threshold, unsigned noise_layers,
 	float noise_layer_roughness, float noise_layer_persistence) :
-	resolution_(resolution), radius_(radius), debug_building_(true)
+	resolution_(resolution), radius_(radius), debug_building_(false)
 {
 	noise_layers_.push_back(
 		std::make_unique<NoiseLayerSettings>(
@@ -70,7 +70,7 @@ void PlanetMesh::initBuffers(ID3D11Device* device)
 		XMVECTOR target_position = XMLoadFloat3(&cube_vertex_pos);
 		//Calculate its unit normal with the calculated vector
 		XMVECTOR unit_target_position = XMVector3Normalize(target_position);
-		XMStoreFloat3(&v.normal, target_position);
+		XMStoreFloat3(&v.normal, unit_target_position);
 		//Assign the new vertex position
 		target_position = unit_target_position * radius_;
 		float total_noise = 0.f;
@@ -89,14 +89,6 @@ void PlanetMesh::initBuffers(ID3D11Device* device)
 			//For every sub layers, calculate the FBM noise
 			for (unsigned j = 0u; j < layer->layer_nSubLayers_; ++j)
 			{
-				/*noise_value += .5f * a * (static_cast<float>(ImprovedNoise::noise(
-					(XMVectorGetX(target_position) + layer->layer_center_.x) * f,
-					(XMVectorGetY(target_position) + layer->layer_center_.y) * f,
-					(XMVectorGetZ(target_position) + layer->layer_center_.z) * f)) + 1.f);*/
-				/*noise_value += a * (1.f - std::abs(static_cast<float>(ImprovedNoise::noise(
-					(XMVectorGetX(target_position) + layer->layer_center_.x) * f,
-					(XMVectorGetY(target_position) + layer->layer_center_.y) * f,
-					(XMVectorGetZ(target_position) + layer->layer_center_.z) * f))));*/
 				float noise = static_cast<float>(ImprovedNoise::noise(
 					(XMVectorGetX(target_position) + layer->layer_center_.x) * f,
 					(XMVectorGetY(target_position) + layer->layer_center_.y) * f,
@@ -729,6 +721,78 @@ void PlanetMesh::initBuffers(ID3D11Device* device)
 	}
 
 init_buffers:
+	//Recalculate normals
+	//Set up normals for the face
+	for (int k = 0; k < v - 3; k += 3) {
+		//Calculate the plane normals
+		XMFLOAT3 a, b, c;	//Three corner vertices
+		XMFLOAT3 cross;		//Cross product
+		float mag;			//Magnitude of the cross product
+		XMFLOAT3 ab;		//Edges
+		XMFLOAT3 ac;
+		//Bottom left, top right, top left
+		//Bottom left, bottom right, top right
+		//First vertex
+		a = vertices[k].position;
+		b = vertices[k + 1].position;
+		c = vertices[k + 2].position;
+
+		//Two edges
+		ab = XMFLOAT3(c.x - a.x, c.y - a.y, c.z - a.z);
+		ac = XMFLOAT3(b.x - a.x, b.y - a.y, b.z - a.z);
+
+		//Calculate the cross product
+		cross.x = ab.y * ac.z - ab.z * ac.y;
+		cross.y = ab.z * ac.x - ab.x * ac.z;
+		cross.z = ab.x * ac.y - ab.y * ac.x;
+		mag = (cross.x * cross.x) + (cross.y * cross.y) + (cross.z * cross.z);
+		mag = sqrtf(mag);
+		cross.x /= mag;
+		cross.y /= mag;
+		cross.z /= mag;
+		vertices[k].normal = cross;
+
+		//Second vertex
+		a = vertices[k + 1].position;
+		b = vertices[k + 2].position;
+		c = vertices[k].position;
+
+		//Two edges
+		ab = XMFLOAT3(c.x - a.x, c.y - a.y, c.z - a.z);
+		ac = XMFLOAT3(b.x - a.x, b.y - a.y, b.z - a.z);
+
+		//Calculate the cross product
+		cross.x = ab.y * ac.z - ab.z * ac.y;
+		cross.y = ab.z * ac.x - ab.x * ac.z;
+		cross.z = ab.x * ac.y - ab.y * ac.x;
+		mag = (cross.x * cross.x) + (cross.y * cross.y) + (cross.z * cross.z);
+		mag = sqrtf(mag);
+		cross.x /= mag;
+		cross.y /= mag;
+		cross.z /= mag;
+		vertices[k + 1].normal = cross;
+
+		//Third vertex
+		a = vertices[k + 2].position;
+		b = vertices[k].position;
+		c = vertices[k + 1].position;
+
+		//Two edges
+		ab = XMFLOAT3(c.x - a.x, c.y - a.y, c.z - a.z);
+		ac = XMFLOAT3(b.x - a.x, b.y - a.y, b.z - a.z);
+
+		//Calculate the cross product
+		cross.x = ab.y * ac.z - ab.z * ac.y;
+		cross.y = ab.z * ac.x - ab.x * ac.z;
+		cross.z = ab.x * ac.y - ab.y * ac.x;
+		mag = (cross.x * cross.x) + (cross.y * cross.y) + (cross.z * cross.z);
+		mag = sqrtf(mag);
+		cross.x /= mag;
+		cross.y /= mag;
+		cross.z /= mag;
+		vertices[k + 2].normal = cross;
+	}
+
 	// Set up the description of the static vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexBufferDesc.ByteWidth = sizeof(VertexType) * vertexCount;
