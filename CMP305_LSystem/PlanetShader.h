@@ -14,6 +14,7 @@ private:
 	{
 		float noise_max;
 		XMFLOAT3 padding;
+		XMFLOAT4 material_thresholds;	//x snow, y rock, z grass, w beach
 	};
 
 public:
@@ -21,7 +22,7 @@ public:
 	~PlanetShader();
 
 	void setShaderParameters(ID3D11DeviceContext* dc, const XMMATRIX& world, const XMMATRIX& view, const XMMATRIX& projection, Light* light,
-		const float& noise_max);
+		const float& noise_max, XMFLOAT4& thresholds);
 
 private:
 	void initShader(const wchar_t* vs, const wchar_t* ps);

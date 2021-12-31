@@ -4,6 +4,7 @@
 #include "ExtraAlgorithms.h"
 #include <vector>
 #include <memory>
+#include <fstream>
 //Noise settings - A collection of settings for each layer instanciated
 enum class NoiseType { FBM, RIGID };
 
@@ -61,10 +62,12 @@ class PlanetMesh : public BaseMesh
 public:
 	PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution = 20u,
 		float noise_frequency = 0.f, float noise_amplitude = 0.f, XMFLOAT3 noise_center = XMFLOAT3(0.f, 0.f, 0.f),
-		float noise_min_threshold = 0.f, unsigned noise_layers = 1u, float noise_layer_roughness = 2.f, float noise_layer_persistence = .5f);
+		float noise_min_threshold = 0.f, unsigned noise_layers = 1u, float noise_layer_roughness = 0.f, float noise_layer_persistence = 0.f);
 	~PlanetMesh();
 
-	void Regenrate(ID3D11Device* device);
+	void ExportSettings(const char* filename, const int namesize);
+	unsigned ImportSettings(ID3D11Device* device, const char* filename, const int namesize);
+	void GenerateMesh(ID3D11Device* device);
 
 	void setResolution(const unsigned& r) { resolution_ = r; }
 	//void setRadius(const float& r) { radius_ = r; }
@@ -73,7 +76,6 @@ public:
 	//float* getRadius() { return &radius_; }
 	bool* getDebug() { return &debug_building_; }
 	std::vector<std::unique_ptr<NoiseLayerSettings>>* getNoiseLayers() { return &noise_layers_; }
-	const float& getMaxNoise() { return noise_max; }
 
 private:
 	void initBuffers(ID3D11Device* device);
@@ -87,9 +89,5 @@ private:
 
 	//At least one layer will exist, it is initialised in the constructor
 	std::vector<std::unique_ptr<NoiseLayerSettings>> noise_layers_;
-
-	//A float to keep track of the highest noise values
-	//Used in the shader to determine colour gradients
-	float noise_max;
 };
 

@@ -16,7 +16,9 @@ App1::App1() :
 	gui_wind_strength(1.f),
 	fabrik_render_cylinders(false),
 	gui_planet_noise_n_layers(1),
-	gui_planet_rotation(XMFLOAT3(0.f, 0.f, 0.f))
+	gui_planet_rotation(XMFLOAT3(0.f, 0.f, 0.f)),
+	settings_filename("planet_example_1"),
+	gui_planet_shader_material_thresholds(XMFLOAT4(.75f, .5f, .1f, .01f))
 {
 }
 
@@ -83,8 +85,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 
 	//Planet
-	planet_mesh = std::make_unique<PlanetMesh>(renderer->getDevice(), renderer->getDeviceContext(), 20u, .4f, 1.f,
-		XMFLOAT3(0.f, 0.f, 0.f), 1.f, 4, 2.f, .5f);
+	planet_mesh = std::make_unique<PlanetMesh>(renderer->getDevice(), renderer->getDeviceContext());
 }
 
 App1::~App1()
@@ -212,7 +213,7 @@ bool App1::render()
 
 	worldMatrix = XMMatrixRotationRollPitchYaw(gui_planet_rotation.y, gui_planet_rotation.z, gui_planet_rotation.x);
 	planet_mesh->sendData(renderer->getDeviceContext());
-	planet_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, light.get(), planet_mesh->getMaxNoise());
+	planet_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, light.get(), 1.f, gui_planet_shader_material_thresholds);
 	planet_shader->render(renderer->getDeviceContext(), planet_mesh->getIndexCount());
 
 	// Render GUI
@@ -326,17 +327,38 @@ void App1::gui()
 	if (ImGui::CollapsingHeader("Planet Settings"))
 	{
 		bool need_generation = false;
+
+		ImGui::Text("Current Save File:");
+		ImGui::InputText("File Name", settings_filename, 64);
+		if (ImGui::Button("Export", ImVec2(120, 20)))
+			planet_mesh->ExportSettings(settings_filename, 64);
+		ImGui::SameLine();
+		if (ImGui::Button("Import", ImVec2(120, 20)))
+			gui_planet_noise_n_layers = planet_mesh->ImportSettings(renderer->getDevice(), settings_filename, 64);
+
+		ImGui::Separator();
 		ImGui::Text("Mesh Settings:");
 		need_generation |= ImGui::Checkbox("Debug Generation", planet_mesh->getDebug());
 		need_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
 		//need_generation |= ImGui::SliderFloat("Radius", planet_mesh->getRadius(), .1f, 100.f);
 		ImGui::DragFloat3("Roll Pitch Yaw", &gui_planet_rotation.x, .01f);
+
+		ImGui::Separator();
+		ImGui::Text("Shader Settings:");
+		ImGui::DragFloat("Beach", &gui_planet_shader_material_thresholds.w, .01f);
+		ImGui::DragFloat("Grass", &gui_planet_shader_material_thresholds.z, .01f);
+		ImGui::DragFloat("Rock", &gui_planet_shader_material_thresholds.y, .01f);
+		ImGui::DragFloat("Snow", &gui_planet_shader_material_thresholds.x, .01f);
+		
+		ImGui::Separator();
+		ImGui::Text("Layer Settings:");
 		std::vector<std::unique_ptr<NoiseLayerSettings>>* noise_layers = planet_mesh->getNoiseLayers();
 		if (ImGui::SliderInt("Number of Layers", &gui_planet_noise_n_layers, 1, 10))
 		{
 			int n_elements = noise_layers->size();
-			for(int i = n_elements; i < gui_planet_noise_n_layers; ++i) noise_layers->push_back(std::make_unique<NoiseLayerSettings>());
+			for (int i = n_elements; i < gui_planet_noise_n_layers; ++i) noise_layers->push_back(std::make_unique<NoiseLayerSettings>());
 			for (int i = n_elements; i > gui_planet_noise_n_layers; --i) noise_layers->pop_back();
+			if (noise_layers->size() != n_elements) planet_mesh->GenerateMesh(renderer->getDevice());
 		}
 		for (unsigned i = 0u; i < noise_layers->size(); ++i)
 		{
@@ -351,8 +373,8 @@ void App1::gui()
 				NoiseType* current_type = &current_layer->noise_type_;
 				need_generation |= ImGui::Combo("Noise Type", (int*)current_type, "FBM\0Rigid\0\0");
 				need_generation |= ImGui::DragFloat("Noise frequency", &current_layer->noise_base_frequency_, 0.001f);
-				need_generation |= ImGui::DragFloat("Noise amplitude", &current_layer->noise_base_amplitude_, 0.01f);
-				need_generation |= ImGui::DragFloat3("Noise center", &current_layer->layer_center_.x, .1f);
+				need_generation |= ImGui::DragFloat("Noise amplitude", &current_layer->noise_base_amplitude_, 0.001f);
+				need_generation |= ImGui::DragFloat3("Noise center", &current_layer->layer_center_.x, .001f);
 				need_generation |= ImGui::SliderFloat("Min threshold", &current_layer->noise_min_threshold_, 0.f, 10.f);
 				if (*current_type == NoiseType::RIGID)
 				{
@@ -369,7 +391,7 @@ void App1::gui()
 				ImGui::TreePop();
 			}
 		}
-		if (need_generation) planet_mesh->Regenrate(renderer->getDevice());
+		if (need_generation) planet_mesh->GenerateMesh(renderer->getDevice());
 	}
 
 	// Render UI
