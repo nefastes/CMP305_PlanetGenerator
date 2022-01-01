@@ -165,6 +165,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App1.cpp" />
+    <ClCompile Include="farm.cpp" />
+    <ClCompile Include="GenerateMeshTask.cpp" />
     <ClCompile Include="PlanetMesh.cpp" />
     <ClCompile Include="CylinderMesh.cpp" />
     <ClCompile Include="FabrikMesh.cpp" />
@@ -178,6 +180,8 @@
   <ItemGroup>
     <ClInclude Include="App1.h" />
     <ClInclude Include="ExtraAlgorithms.h" />
+    <ClInclude Include="farm.h" />
+    <ClInclude Include="GenerateMeshTask.h" />
     <ClInclude Include="PlanetMesh.h" />
     <ClInclude Include="CylinderMesh.h" />
     <ClInclude Include="FabrikMesh.h" />
@@ -187,6 +191,7 @@
     <ClInclude Include="LineMesh.h" />
     <ClInclude Include="LSystem.h" />
     <ClInclude Include="PlanetShader.h" />
+    <ClInclude Include="task.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DXFramework\DXFramework.vcxproj">

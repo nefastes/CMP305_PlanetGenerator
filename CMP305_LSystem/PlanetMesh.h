@@ -1,7 +1,7 @@
 #pragma once
 #include "BaseMesh.h"
-#include "ImprovedNoise.h"
-#include "ExtraAlgorithms.h"
+#include "farm.h"
+#include "GenerateMeshTask.h"
 #include <vector>
 #include <memory>
 #include <fstream>
@@ -37,5 +37,8 @@ private:
 
 	//At least one layer will exist, it is initialised in the constructor
 	std::vector<std::unique_ptr<NoiseLayerSettings>> noise_layers_;
+
+	//A farm for mulithreading
+	Farm farm;
 };
 

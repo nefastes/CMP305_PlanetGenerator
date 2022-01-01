@@ -31,6 +31,12 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{b38699c6-9c33-4c64-a78f-dec2536fbdb5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\MultiThreading">
+      <UniqueIdentifier>{1f7ed6d7-7462-4cc6-99c0-fccecf1c258c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MultiThreading">
+      <UniqueIdentifier>{96789d8c-394d-4555-9f76-1f1bb9320b15}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App1.cpp">
@@ -62,6 +68,12 @@
     </ClCompile>
     <ClCompile Include="FabrikMesh.cpp">
       <Filter>Source Files\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="farm.cpp">
+      <Filter>Source Files\MultiThreading</Filter>
+    </ClCompile>
+    <ClCompile Include="GenerateMeshTask.cpp">
+      <Filter>Source Files\MultiThreading</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +109,15 @@
     </ClInclude>
     <ClInclude Include="PlanetShader.h">
       <Filter>Header Files\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="farm.h">
+      <Filter>Header Files\MultiThreading</Filter>
+    </ClInclude>
+    <ClInclude Include="task.h">
+      <Filter>Header Files\MultiThreading</Filter>
+    </ClInclude>
+    <ClInclude Include="GenerateMeshTask.h">
+      <Filter>Header Files\MultiThreading</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

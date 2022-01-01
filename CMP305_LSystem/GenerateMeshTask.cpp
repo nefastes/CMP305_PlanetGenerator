@@ -1,8 +1,8 @@
 #include "GenerateMeshTask.h"
 
-GenerateMeshTask::GenerateMeshTask(VertexType* v, const XMFLOAT3& cube_vertex_pos, const float& radius, const std::vector<std::unique_ptr<NoiseLayerSettings>>* noise_layers)
+GenerateMeshTask::GenerateMeshTask(XMFLOAT3* v_pos, const XMFLOAT3& cube_vertex_pos, const float& radius, const std::vector<std::unique_ptr<NoiseLayerSettings>>* noise_layers)
 {
-	task_vertex_ = v;
+	task_vertex_position_ = v_pos;
 	task_cube_vertex_pos_ = cube_vertex_pos;
 	task_radius_ = radius;
 	task_noise_layers_ = noise_layers;
@@ -16,9 +16,8 @@ void GenerateMeshTask::run()
 {
 	//Create a vector from the center to the position
 	XMVECTOR target_position = XMLoadFloat3(&task_cube_vertex_pos_);
-	//Calculate its unit normal with the calculated vector
+	//Calculate its unit vector
 	XMVECTOR unit_target_position = XMVector3Normalize(target_position);
-	XMStoreFloat3(&task_vertex_->normal, unit_target_position);
 	//Assign the new vertex position
 	target_position = unit_target_position * task_radius_;
 	float total_noise = 0.f;
@@ -82,5 +81,5 @@ void GenerateMeshTask::run()
 	//The noise displacement is a simple multiplication of the unit vector of the vertex position from the center with the total noise
 	XMVECTOR noise_displacement = unit_target_position * total_noise;
 	//The final position is then the traget position (unit vector * radius_) plus noisy displacement
-	XMStoreFloat3(&task_vertex_->position, target_position + noise_displacement);
+	XMStoreFloat3(task_vertex_position_, target_position + noise_displacement);
 }
