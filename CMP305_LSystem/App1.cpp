@@ -18,7 +18,8 @@ App1::App1() :
 	gui_planet_noise_n_layers(1),
 	gui_planet_rotation(XMFLOAT3(0.f, 0.f, 0.f)),
 	settings_filename("planet_example_1"),
-	gui_planet_shader_material_thresholds(XMFLOAT4(.75f, .5f, .1f, .01f))
+	gui_planet_shader_material_thresholds(XMFLOAT4(.75f, .5f, .1f, .01f)),
+	gui_planet_generate_on_input(true)
 {
 }
 
@@ -331,7 +332,34 @@ void App1::gui()
 		ImGui::Text("Current Save File:");
 		ImGui::InputText("File Name", settings_filename, 64);
 		if (ImGui::Button("Export", ImVec2(120, 20)))
-			planet_mesh->ExportSettings(settings_filename, 64);
+		{
+			if (planet_mesh->does_file_exist(settings_filename, 64))ImGui::OpenPopup("OverWrite");
+			else
+			{
+				planet_mesh->ExportSettings(settings_filename, 64);
+				ImGui::OpenPopup("Exported");
+			}
+		}
+		if (ImGui::BeginPopupModal("OverWrite"))
+		{
+			ImGui::Text("File already exists. Overwrite?");
+			if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+			ImGui::SameLine();
+			if (ImGui::Button("OK"))
+			{
+				planet_mesh->ExportSettings(settings_filename, 64);
+				ImGui::CloseCurrentPopup();
+				ImGui::EndPopup();
+				ImGui::OpenPopup("Exported");
+			}
+			else ImGui::EndPopup();
+		}
+		if (ImGui::BeginPopupModal("Exported"))
+		{
+			ImGui::Text("Exportation Completed!");
+			if (ImGui::Button("OK")) ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+		}
 		ImGui::SameLine();
 		if (ImGui::Button("Import", ImVec2(120, 20)))
 			gui_planet_noise_n_layers = planet_mesh->ImportSettings(renderer->getDevice(), settings_filename, 64);
@@ -339,16 +367,21 @@ void App1::gui()
 		ImGui::Separator();
 		ImGui::Text("Mesh Settings:");
 		need_generation |= ImGui::Checkbox("Debug Generation", planet_mesh->getDebug());
+		ImGui::Checkbox("Generate On Modification", &gui_planet_generate_on_input);
+		if (!gui_planet_generate_on_input)
+			if(ImGui::Button("Generate Mesh"))
+				planet_mesh->GenerateMesh(renderer->getDevice());
 		need_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
 		//need_generation |= ImGui::SliderFloat("Radius", planet_mesh->getRadius(), .1f, 100.f);
 		ImGui::DragFloat3("Roll Pitch Yaw", &gui_planet_rotation.x, .01f);
 
 		ImGui::Separator();
 		ImGui::Text("Shader Settings:");
-		ImGui::DragFloat("Beach", &gui_planet_shader_material_thresholds.w, .01f);
-		ImGui::DragFloat("Grass", &gui_planet_shader_material_thresholds.z, .01f);
-		ImGui::DragFloat("Rock", &gui_planet_shader_material_thresholds.y, .01f);
-		ImGui::DragFloat("Snow", &gui_planet_shader_material_thresholds.x, .01f);
+		if (ImGui::Button("Reset Shader")) gui_planet_shader_material_thresholds = XMFLOAT4(.75f, .5f, .1f, .01f);
+		ImGui::DragFloat("Beach", &gui_planet_shader_material_thresholds.w, .001f);
+		ImGui::DragFloat("Grass", &gui_planet_shader_material_thresholds.z, .001f);
+		ImGui::DragFloat("Rock", &gui_planet_shader_material_thresholds.y, .001f);
+		ImGui::DragFloat("Snow", &gui_planet_shader_material_thresholds.x, .001f);
 		
 		ImGui::Separator();
 		ImGui::Text("Layer Settings:");
@@ -391,7 +424,7 @@ void App1::gui()
 				ImGui::TreePop();
 			}
 		}
-		if (need_generation) planet_mesh->GenerateMesh(renderer->getDevice());
+		if (need_generation && gui_planet_generate_on_input) planet_mesh->GenerateMesh(renderer->getDevice());
 	}
 
 	// Render UI

@@ -1,27 +1,24 @@
 #include "PlanetMesh.h"
 
-PlanetMesh::PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution,
-	float noise_frequency, float noise_amplitude, XMFLOAT3 noise_center, float noise_min_threshold, unsigned noise_layers,
-	float noise_layer_roughness, float noise_layer_persistence) :
+PlanetMesh::PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution) :
 	resolution_(resolution), radius_(1.f), debug_building_(false)
 {
-	noise_layers_.push_back(
-		std::make_unique<NoiseLayerSettings>(
-			noise_layer_roughness,
-			noise_layer_persistence,
-			noise_layers,
-			noise_center,
-			noise_frequency,
-			noise_amplitude,
-			noise_min_threshold
-		)
-	);
+	noise_layers_.push_back(std::make_unique<NoiseLayerSettings>());
 	GenerateMesh(device);
 }
 
 PlanetMesh::~PlanetMesh()
 {
 	BaseMesh::~BaseMesh();
+}
+
+bool PlanetMesh::does_file_exist(const char* filename, const int namesize)
+{
+	std::ifstream file;
+	std::string path("planet_settings/");
+	path.append(filename, namesize);
+	file.open(path.c_str(), std::ofstream::binary);
+	return file.good();
 }
 
 void PlanetMesh::ExportSettings(const char* filename, const int namesize)
@@ -36,26 +33,11 @@ void PlanetMesh::ExportSettings(const char* filename, const int namesize)
 		//start by outputing the number of layers
 		//will be needed for importation
 		unsigned n_layers = noise_layers_.size();
-		file << n_layers << std::endl;
+		file.write((char*)&n_layers, sizeof(unsigned));
 
 		//output all the current settings
 		for (unsigned i = 0u; i < n_layers; ++i)
-		{
-			NoiseLayerSettings* current = noise_layers_.at(i).get();
-
-			file << current->layer_active_ << std::endl;
-			file << current->layer_use_previous_layer_as_mask_ << std::endl;
-			file << current->noise_base_amplitude_ << std::endl;
-			file << current->noise_base_frequency_ << std::endl;
-			file << current->noise_min_threshold_ << std::endl;
-			file << static_cast<unsigned>(current->noise_type_) << std::endl;
-			file << current->rigid_noise_LOD_multiplier_ << std::endl;
-			file << current->rigid_noise_sharpness_ << std::endl;
-			file << current->layer_nSubLayers_ << std::endl;
-			file << current->layer_center_.x << std::endl << current->layer_center_.y << std::endl <<current->layer_center_.z << std::endl;
-			file << current->layer_persistence_ << std::endl;
-			file << current->layer_roughness_ << std::endl;
-		}
+			file.write((char*)noise_layers_.at(i).get(), sizeof(NoiseLayerSettings));
 
 		//remember to close the file!
 		file.close();
@@ -74,7 +56,7 @@ unsigned PlanetMesh::ImportSettings(ID3D11Device* device, const char* filename, 
 	if (file.is_open())
 	{
 		//start by retrieving the number of players to import
-		file >> n_layers;
+		file.read((char*)&n_layers, sizeof(unsigned));
 
 		//Make sure the vector of layers will accommodate exactly that number
 		for (unsigned i = noise_layers_.size(); i < n_layers; ++i) noise_layers_.push_back(std::make_unique<NoiseLayerSettings>());
@@ -82,24 +64,7 @@ unsigned PlanetMesh::ImportSettings(ID3D11Device* device, const char* filename, 
 
 		//output all the current settings
 		for (unsigned i = 0u; i < n_layers; ++i)
-		{
-			NoiseLayerSettings* current = noise_layers_.at(i).get();
-
-			file >> current->layer_active_;
-			file >> current->layer_use_previous_layer_as_mask_;
-			file >> current->noise_base_amplitude_;
-			file >> current->noise_base_frequency_;
-			file >> current->noise_min_threshold_;
-			int noise_type;
-			file >> noise_type;
-			current->noise_type_ = static_cast<NoiseType>(noise_type);
-			file >> current->rigid_noise_LOD_multiplier_;
-			file >> current->rigid_noise_sharpness_;
-			file >> current->layer_nSubLayers_;
-			file >> current->layer_center_.x >> current->layer_center_.y >> current->layer_center_.z;
-			file >> current->layer_persistence_;
-			file >> current->layer_roughness_;
-		}
+			file.read((char*)noise_layers_.at(i).get(), sizeof(NoiseLayerSettings));
 
 		//remember to close the file!
 		file.close();

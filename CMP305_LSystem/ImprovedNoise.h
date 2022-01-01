@@ -1,5 +1,42 @@
 #pragma once
 #include <math.h>
+//Noise settings - A collection of settings for each layer instanciated
+enum class NoiseType { FBM, RIGID };
+
+struct NoiseLayerSettings {
+    NoiseLayerSettings() {
+        layer_active_ = true;
+        layer_use_previous_layer_as_mask_ = false;
+        noise_type_ = NoiseType::FBM;
+
+        noise_base_frequency_ = 0.f;
+        noise_base_amplitude_ = 0.f;
+        noise_final_amplitude_ = 0.f;
+        noise_min_threshold_ = 0.f;
+        layer_roughness_ = 0.f;
+        layer_persistence_ = 0.f;
+        layer_nSubLayers_ = 1;
+        layer_center_ = XMFLOAT3(0.f, 0.f, 0.f);
+
+        rigid_noise_sharpness_ = 0.f;
+        rigid_noise_LOD_multiplier_ = 0.f;
+    }
+    //General settings for a layer
+    bool layer_active_, layer_use_previous_layer_as_mask_;
+    NoiseType noise_type_;
+
+    //Basic Settings that each layer will have at the least no matter the noise type
+    float noise_base_frequency_, noise_base_amplitude_, noise_final_amplitude_;
+    float noise_min_threshold_;
+    float layer_roughness_, layer_persistence_;
+    unsigned layer_nSubLayers_;
+    XMFLOAT3 layer_center_;
+
+    //Rigid noise specific settings
+    float rigid_noise_sharpness_;			//Defines how sharp the curve becomes, used as a power when calculating the noise
+    float rigid_noise_LOD_multiplier_;	//Defines how detailed the noise becomes, more details near peaks and low detail on plains
+};
+
 class ImprovedNoise {
 public:
     //3D noise

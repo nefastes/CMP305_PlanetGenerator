@@ -74,6 +74,7 @@ private:
 	XMFLOAT3 gui_planet_rotation;
 	char settings_filename[64];
 	XMFLOAT4 gui_planet_shader_material_thresholds;
+	bool gui_planet_generate_on_input;
 };
 
 #endif

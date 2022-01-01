@@ -5,66 +5,14 @@
 #include <vector>
 #include <memory>
 #include <fstream>
-//Noise settings - A collection of settings for each layer instanciated
-enum class NoiseType { FBM, RIGID };
-
-struct NoiseLayerSettings {
-	NoiseLayerSettings() {
-		layer_active_ = true;
-		layer_use_previous_layer_as_mask_ = false;
-		noise_type_ = NoiseType::FBM;
-
-		noise_base_frequency_ = 0.f;
-		noise_base_amplitude_ = 0.f;
-		noise_min_threshold_ = 0.f;
-		layer_roughness_ = 0.f;
-		layer_persistence_ = 0.f;
-		layer_nSubLayers_ = 1;
-		layer_center_ = XMFLOAT3(0.f, 0.f, 0.f);
-
-		rigid_noise_sharpness_ = 1.f;
-		rigid_noise_LOD_multiplier_ = 1.f;
-	}
-	NoiseLayerSettings(const float& r, const float& p, const unsigned& n, const XMFLOAT3& c, const float& basef, const float& basea, const float& t){
-		layer_active_ = true;
-		layer_use_previous_layer_as_mask_ = false;
-		noise_type_ = NoiseType::FBM;
-
-		layer_roughness_ = r;
-		layer_persistence_ = p;
-		layer_nSubLayers_ = n;
-		layer_center_ = c;
-		noise_base_frequency_ = basef;
-		noise_base_amplitude_ = basea;
-		noise_min_threshold_ = t;
-
-		rigid_noise_sharpness_ = 1.f;
-		rigid_noise_LOD_multiplier_ = 1.f;
-	}
-	//General settings for a layer
-	bool layer_active_, layer_use_previous_layer_as_mask_;
-	NoiseType noise_type_;
-
-	//Basic Settings that each layer will have at the least no matter the noise type
-	float noise_base_frequency_, noise_base_amplitude_;
-	float noise_min_threshold_;
-	float layer_roughness_, layer_persistence_;
-	unsigned layer_nSubLayers_;
-	XMFLOAT3 layer_center_;
-
-	//Rigid noise specific settings
-	float rigid_noise_sharpness_;			//Defines how sharp the curve becomes, used as a power when calculating the noise
-	float rigid_noise_LOD_multiplier_;	//Defines how detailed the noise becomes, more details near peaks and low detail on plains
-};
 
 class PlanetMesh : public BaseMesh
 {
 public:
-	PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution = 20u,
-		float noise_frequency = 0.f, float noise_amplitude = 0.f, XMFLOAT3 noise_center = XMFLOAT3(0.f, 0.f, 0.f),
-		float noise_min_threshold = 0.f, unsigned noise_layers = 1u, float noise_layer_roughness = 0.f, float noise_layer_persistence = 0.f);
+	PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution = 20u);
 	~PlanetMesh();
 
+	bool does_file_exist(const char* filename, const int namesize);
 	void ExportSettings(const char* filename, const int namesize);
 	unsigned ImportSettings(ID3D11Device* device, const char* filename, const int namesize);
 	void GenerateMesh(ID3D11Device* device);
