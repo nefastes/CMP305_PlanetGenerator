@@ -19,13 +19,15 @@ public:
 	void run();
 
 	void toggleNumberThreads();
-	unsigned& getNumberThreads() { return nCPUs; }
+	const unsigned& getNumberThreads() { return nCPUs_; }
+	const float& getProgressPercentage() { return progress_percentage_; }
 
 private:
 	std::queue<Task*> task_queue_;
 	std::mutex queue_mutex_;
-	unsigned nCPUs = std::thread::hardware_concurrency();	//Change this to anything you want
-	std::vector<std::thread*> threads;
+	unsigned nCPUs_ = std::thread::hardware_concurrency();	//Change this to anything you want
+	std::vector<std::thread*> threads_;
+	float progress_percentage_;
 };
 
 #endif

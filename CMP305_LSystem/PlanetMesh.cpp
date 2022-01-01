@@ -218,7 +218,7 @@ void PlanetMesh::GenerateMesh(ID3D11Device* device)
 	}
 
 	//If we are debugging, do not render anymore faces
-	if (debug_building_) goto calc_normals;
+	if (debug_building_) goto run_farm;
 
 	//back face
 	ystart = 1.f;
@@ -766,7 +766,8 @@ void PlanetMesh::GenerateMesh(ID3D11Device* device)
 		txv += txvinc;
 	}
 
-calc_normals:
+run_farm:
+	//Run the thread farm to calculate the vertices
 	farm.run();
 	//Recalculate normals
 	//Set up normals for the face

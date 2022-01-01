@@ -406,7 +406,8 @@ void App1::gui()
 				NoiseType* current_type = &current_layer->noise_type_;
 				need_generation |= ImGui::Combo("Noise Type", (int*)current_type, "FBM\0Rigid\0\0");
 				need_generation |= ImGui::DragFloat("Noise frequency", &current_layer->noise_base_frequency_, 0.001f);
-				need_generation |= ImGui::DragFloat("Noise amplitude", &current_layer->noise_base_amplitude_, 0.001f);
+				need_generation |= ImGui::DragFloat("Noise Base amplitude", &current_layer->noise_base_amplitude_, 0.001f);
+				need_generation |= ImGui::DragFloat("Noise Final amplitude", &current_layer->noise_final_amplitude_, 0.001f);
 				need_generation |= ImGui::DragFloat3("Noise center", &current_layer->layer_center_.x, .001f);
 				need_generation |= ImGui::SliderFloat("Min threshold", &current_layer->noise_min_threshold_, 0.f, 10.f);
 				if (*current_type == NoiseType::RIGID)
