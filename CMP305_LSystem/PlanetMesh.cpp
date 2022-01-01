@@ -4,6 +4,7 @@ PlanetMesh::PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 	resolution_(resolution), radius_(1.f), debug_building_(false)
 {
 	noise_layers_.push_back(std::make_unique<NoiseLayerSettings>());
+	GenerateVertices();
 	GenerateMesh(device);
 }
 
@@ -68,26 +69,15 @@ unsigned PlanetMesh::ImportSettings(ID3D11Device* device, const char* filename, 
 
 		//remember to close the file!
 		file.close();
-
-		//Once settings have been imported, regenerate
-		GenerateMesh(device);
 	}
 	return n_layers;
 }
 
-void PlanetMesh::GenerateMesh(ID3D11Device* device)
+void PlanetMesh::GenerateVertices()
 {
 	//The cube sphere is generated with a radius of radius_ around the center (0,0,0)
 	//Every vertex needs to be at the same distance from the center
 
-	//Check if the cube sphere was already generated, in the event of regeneration
-	if (vertexBuffer) vertexBuffer->Release(), vertexBuffer = NULL;
-	if (indexBuffer) indexBuffer->Release(), indexBuffer = NULL;
-
-	VertexType* vertices;
-	unsigned long* indices;
-	D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc;
-	D3D11_SUBRESOURCE_DATA vertexData, indexData;
 	// 6 vertices per quad, res*res is face, times 6 for each face (From Paul Robertson - CubeMesh)
 	// 6 vertices per quad because one quad consists of two triangles, i.e. 2x3 vertices
 	vertexCount = static_cast<int>(((6u * resolution_) * resolution_) * 6u);
@@ -118,7 +108,7 @@ void PlanetMesh::GenerateMesh(ID3D11Device* device)
 		{
 			// Load the vertex array with data.
 			// 0 - Bottom left. -1. -1. 0
-			farm.add_task( new GenerateMeshTask(
+			farm.add_task(new GenerateMeshTask(
 				&vertices[v].position,
 				XMFLOAT3(xstart, ystart - yincrement, -1.0f),
 				radius_,
@@ -769,9 +759,17 @@ void PlanetMesh::GenerateMesh(ID3D11Device* device)
 run_farm:
 	//Run the thread farm to calculate the vertices
 	farm.run();
+}
+
+void PlanetMesh::GenerateMesh(ID3D11Device* device)
+{	
+	//This function should not be called before GenerateVertices has been called and a check of the farm status has completed
+	//Clean the farm since the generation is complete
+	farm.clean();
+
 	//Recalculate normals
 	//Set up normals for the face
-	for (int k = 0; k < v - 3; k += 3) {
+	for (int k = 0; k < vertexCount - 3; k += 3) {
 		for (int l = 0; l < 3; ++l)
 		{
 			//Calculate the plane normals
@@ -803,6 +801,12 @@ run_farm:
 		}
 	}
 
+	//Check if the cube sphere was already generated, in the event of regeneration
+	if (vertexBuffer) vertexBuffer->Release(), vertexBuffer = NULL;
+	if (indexBuffer) indexBuffer->Release(), indexBuffer = NULL;
+
+	D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc;
+	D3D11_SUBRESOURCE_DATA vertexData, indexData;
 	// Set up the description of the static vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexBufferDesc.ByteWidth = sizeof(VertexType) * vertexCount;

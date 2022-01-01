@@ -3,11 +3,15 @@
 #include <queue>
 #include <mutex>
 #include <thread>
+#include <assert.h>
 #include "task.h"
 
 /** A collection of tasks that should be performed in parallel. */
 class Farm {
 public:
+
+	Farm();
+	~Farm();
 
 	/** Add a task to the farm.
 		The task will be deleted once it has been run. */
@@ -17,17 +21,20 @@ public:
 		This method only returns once all the tasks in the farm
 		have been completed. */
 	void run();
+	const bool& isRunning() { return running_; }
+	void clean();
 
 	void toggleNumberThreads();
 	const unsigned& getNumberThreads() { return nCPUs_; }
-	const float& getProgressPercentage() { return progress_percentage_; }
+	const float getProgressPercentage();
 
 private:
+	bool running_;
 	std::queue<Task*> task_queue_;
 	std::mutex queue_mutex_;
-	unsigned nCPUs_ = std::thread::hardware_concurrency();	//Change this to anything you want
+	unsigned nCPUs_;
 	std::vector<std::thread*> threads_;
-	float progress_percentage_;
+	float percentage_per_task_;
 };
 
 #endif

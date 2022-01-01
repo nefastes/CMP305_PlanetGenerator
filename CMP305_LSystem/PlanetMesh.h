@@ -15,6 +15,9 @@ public:
 	bool does_file_exist(const char* filename, const int namesize);
 	void ExportSettings(const char* filename, const int namesize);
 	unsigned ImportSettings(ID3D11Device* device, const char* filename, const int namesize);
+	void GenerateVertices();
+	const bool& isGeneratingVertices() { return farm.isRunning(); }
+	const float& getGenerationProgress() { return farm.getProgressPercentage(); }
 	void GenerateMesh(ID3D11Device* device);
 
 	void setResolution(const unsigned& r) { resolution_ = r; }
@@ -40,5 +43,7 @@ private:
 
 	//A farm for mulithreading
 	Farm farm;
+	VertexType* vertices;
+	unsigned long* indices;
 };
 

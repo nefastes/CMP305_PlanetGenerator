@@ -362,15 +362,22 @@ void App1::gui()
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Import", ImVec2(120, 20)))
+		{
 			gui_planet_noise_n_layers = planet_mesh->ImportSettings(renderer->getDevice(), settings_filename, 64);
+			planet_mesh->GenerateVertices();
+			ImGui::OpenPopup("Generation");
+		}
 
 		ImGui::Separator();
 		ImGui::Text("Mesh Settings:");
 		need_generation |= ImGui::Checkbox("Debug Generation", planet_mesh->getDebug());
 		ImGui::Checkbox("Generate On Modification", &gui_planet_generate_on_input);
 		if (!gui_planet_generate_on_input)
-			if(ImGui::Button("Generate Mesh"))
-				planet_mesh->GenerateMesh(renderer->getDevice());
+			if (ImGui::Button("Generate Mesh"))
+			{
+				planet_mesh->GenerateVertices();
+				ImGui::OpenPopup("Generation");
+			}
 		need_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
 		//need_generation |= ImGui::SliderFloat("Radius", planet_mesh->getRadius(), .1f, 100.f);
 		ImGui::DragFloat3("Roll Pitch Yaw", &gui_planet_rotation.x, .01f);
@@ -425,7 +432,25 @@ void App1::gui()
 				ImGui::TreePop();
 			}
 		}
-		if (need_generation && gui_planet_generate_on_input) planet_mesh->GenerateMesh(renderer->getDevice());
+		if (need_generation && gui_planet_generate_on_input)
+		{
+			planet_mesh->GenerateVertices();
+			ImGui::OpenPopup("Generation");
+		}
+		if (ImGui::BeginPopupModal("Generation"))
+		{
+			if (planet_mesh->isGeneratingVertices())
+			{
+				ImGui::Text("Generating Planet...");
+				ImGui::ProgressBar(planet_mesh->getGenerationProgress(), ImVec2(400, 20));
+			}
+			else
+			{
+				planet_mesh->GenerateMesh(renderer->getDevice());
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
 	}
 
 	// Render UI

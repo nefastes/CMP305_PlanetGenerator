@@ -72,6 +72,7 @@ void GenerateMeshTask::run()
 		//This operation reduces the displacement dictated by the threshold value
 		//It ensures it cannot go negative, so the minimum distance from the center will be radius_
 		//This allows to create round water and noisy continents
+		//The final ampltiude therefore influences only what is above the radius, usefull to create large flat continents
 		noise_value = max(0.f, noise_value - layer->noise_min_threshold_) * layer->noise_final_amplitude_;
 		//Add the calculated noise value to the total noise
 		total_noise += noise_value * (layer->layer_use_previous_layer_as_mask_ ? layer_mask : 1.f);
