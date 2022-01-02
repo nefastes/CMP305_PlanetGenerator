@@ -1,9 +1,11 @@
 #include "CylinderMesh.h"
 #include <vector>
 // Store shape resolution (default is 20), initialise buffers and load texture.
-CylinderMesh::CylinderMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int stacks, int slices, float height, float bottomRadius, float topRadius)
+CylinderMesh::CylinderMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int stacks, int slices, float height, float bottomRadius,
+	float topRadius, XMMATRIX& transform)
 {
 	init(device, stacks, slices, height, bottomRadius, topRadius);
+	m_Transform = transform;
 }
 
 // Release resources.

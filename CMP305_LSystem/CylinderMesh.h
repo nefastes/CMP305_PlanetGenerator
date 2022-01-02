@@ -4,7 +4,8 @@ class CylinderMesh :
     public BaseMesh
 {
 public:
-	CylinderMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int stacks = 1, int slices = 6, float height = 1.0f, float bottomRadius = 0.5f, float topRadius = 0.5f);
+	CylinderMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int stacks = 1, int slices = 6, float height = 1.0f,
+		float bottomRadius = 0.5f, float topRadius = 0.5f, XMMATRIX& transform = XMMatrixIdentity());
 	~CylinderMesh();
 	XMMATRIX m_Transform;
 

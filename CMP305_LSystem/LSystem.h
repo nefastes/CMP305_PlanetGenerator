@@ -5,12 +5,12 @@
 class LSystem
 {
 public:
-	LSystem(std::string Axiom);
+	LSystem(std::string& Axiom);
 
 	//Get the string that represents the current state of the L-System
-	inline const std::string GetCurrentSystem() { return m_CurrentSystem; }
+	inline const std::string& GetCurrentSystem() { return m_CurrentSystem; }
 	inline void SetAxiom(std::string Axiom) { m_Axiom = Axiom; }
-	inline const std::string GetAxiom() { return m_Axiom; }
+	inline const std::string& GetAxiom() { return m_Axiom; }
 
 
 	void ClearRules();
@@ -22,6 +22,6 @@ public:
 private:
 	std::string m_Axiom;
 	std::string m_CurrentSystem;
-	std::map<char, std::string> m_rules;
+	std::multimap<char, std::string> m_rules;
 };
 

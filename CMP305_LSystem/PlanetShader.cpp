@@ -40,7 +40,7 @@ PlanetShader::~PlanetShader()
 }
 
 void PlanetShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX& worldMatrix, const XMMATRIX& viewMatrix,
-	const XMMATRIX& projectionMatrix, Light* light, const float& noise_max, XMFLOAT4& thresholds)
+	const XMMATRIX& projectionMatrix, Light* light,const XMFLOAT4& thresholds)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -73,8 +73,6 @@ void PlanetShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	SettingsBufferType* settingsPtr;
 	result = deviceContext->Map(settingsBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	settingsPtr = (SettingsBufferType*)mappedResource.pData;
-	settingsPtr->noise_max = noise_max;
-	settingsPtr->padding = XMFLOAT3(0.f, 0.f, 0.f);
 	settingsPtr->material_thresholds = thresholds;
 	deviceContext->Unmap(settingsBuffer, 0);
 	deviceContext->VSSetConstantBuffers(1, 1, &settingsBuffer);

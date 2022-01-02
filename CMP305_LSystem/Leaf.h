@@ -3,9 +3,9 @@
 class Leaf : public SphereMesh
 {
 public:
-	Leaf(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int lresolution = 20) : SphereMesh(device, deviceContext, lresolution)
+	Leaf(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int lresolution = 20) : SphereMesh(device, deviceContext, lresolution),
+		m_Transform(XMMatrixIdentity())
 	{
-		m_Transform = XMMatrixIdentity();
 	}
 	~Leaf() { SphereMesh::~SphereMesh(); }
 	XMMATRIX m_Transform;

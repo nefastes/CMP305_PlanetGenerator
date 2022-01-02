@@ -1,5 +1,5 @@
 // Light pixel shader
-// Calculate diffuse lighting for a single directional light (also texturing)
+// Calculate diffuse lighting for a single directional light
 
 cbuffer LightBuffer : register(b0)
 {

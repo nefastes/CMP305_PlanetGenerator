@@ -2,10 +2,6 @@
 // Lab 1 example, simple coloured triangle mesh
 #include "App1.h"
 App1::App1() :
-	lSystem("A"),
-	lSystem_nIterations(1),
-	lSystem_BuildType(0),
-	lSystem_UseCylinders(false),
 	fabrik_goal_position(XMFLOAT3(0.f, 1.f, 0.f)),
 	fabrik_n_segments(1),
 	fabrik_total_length(1.f),
@@ -38,7 +34,6 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	// Create Mesh object and shader object
 	m_ground = std::make_unique<PlaneMesh>(renderer->getDevice(), renderer->getDeviceContext());
-	m_Line = std::make_unique<LineMesh>(renderer->getDevice(), renderer->getDeviceContext());
 	light_shader = std::make_unique<LightShader>(renderer->getDevice(), hwnd);
 	planet_shader = std::make_unique<PlanetShader>(renderer->getDevice(), hwnd);
 
@@ -49,17 +44,6 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	camera->setPosition(0.0f, 1.0f, -3.0f);
 	camera->setRotation(0.0f, 0.0f, 00.0f);
-
-	////Add rules to the Lsystem
-	//Below to test lSystem
-	//lSystem.AddRule('A', "AB");
-	//lSystem.AddRule('B', "A");
-
-	//The application starts with the 2D tree rules
-	lSystem.AddRule('B', "BB");
-	lSystem.AddRule('A', "B[A]A");
-	lSystem.AddRule('[', "[");
-	lSystem.AddRule(']', "]");
 
 	//Fabrik
 	fabrik_goal_mesh = std::make_unique<SphereMesh>(renderer->getDevice(), renderer->getDeviceContext());
@@ -87,16 +71,14 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	//Planet
 	planet_mesh = std::make_unique<PlanetMesh>(renderer->getDevice(), renderer->getDeviceContext());
+	//test tree
+	planet_trees.push_back(std::make_unique<Tree>(renderer->getDevice(), renderer->getDeviceContext(), hwnd));
 }
 
 App1::~App1()
 {
 	// Run base application deconstructor
 	BaseApplication::~BaseApplication();
-
-	//Delete 3d objects
-	m_3dtree_branches.clear();
-	m_3dtree_leaves.clear();
 }
 
 bool App1::frame()
@@ -165,25 +147,16 @@ bool App1::render()
 	worldMatrix = renderer->getWorldMatrix();
 	viewMatrix = camera->getViewMatrix();
 	projectionMatrix = renderer->getProjectionMatrix();
-	/*if (m_Line->getIndexCount() > 0) {
-		light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
-		m_Line->sendData(renderer->getDeviceContext());
-		light_shader->render(renderer->getDeviceContext(), m_Line->getIndexCount());
-	}
-	for (unsigned i = 0u; i < m_3dtree_branches.size(); ++i)
-	{
-		light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix * m_3dtree_branches[i]->m_Transform, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
-		m_3dtree_branches[i]->sendData(renderer->getDeviceContext());
-		light_shader->render(renderer->getDeviceContext(), m_3dtree_branches[i]->getIndexCount());
-	}
-	for (unsigned i = 0u; i < m_3dtree_leaves.size(); ++i)
-	{
-		light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix * m_3dtree_leaves[i]->m_Transform, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
-		m_3dtree_leaves[i]->sendData(renderer->getDeviceContext());
-		light_shader->render(renderer->getDeviceContext(), m_3dtree_leaves[i]->getIndexCount());
-	}
+	for (unsigned i = 0u; i < planet_trees.size(); ++i)
+		planet_trees[i]->render(
+			renderer->getDeviceContext(),
+			worldMatrix,
+			viewMatrix,
+			projectionMatrix,
+			light.get()
+		);
 
-	if (fabrik_mesh->getIndexCount())
+	/*if (fabrik_mesh->getIndexCount())
 	{
 		if(fabrik_render_cylinders) fabrik_mesh->sendData(renderer->getDeviceContext(), D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		else fabrik_mesh->sendData(renderer->getDeviceContext());
@@ -212,10 +185,10 @@ bool App1::render()
 	light_shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());*/
 
 
-	worldMatrix = XMMatrixRotationRollPitchYaw(gui_planet_rotation.y, gui_planet_rotation.z, gui_planet_rotation.x);
+	/*worldMatrix = XMMatrixRotationRollPitchYaw(gui_planet_rotation.y, gui_planet_rotation.z, gui_planet_rotation.x);
 	planet_mesh->sendData(renderer->getDeviceContext());
-	planet_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, light.get(), 1.f, gui_planet_shader_material_thresholds);
-	planet_shader->render(renderer->getDeviceContext(), planet_mesh->getIndexCount());
+	planet_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, light.get(), gui_planet_shader_material_thresholds);
+	planet_shader->render(renderer->getDeviceContext(), planet_mesh->getIndexCount());*/
 
 	// Render GUI
 	gui();
@@ -240,57 +213,14 @@ void App1::gui()
 
 	if (ImGui::CollapsingHeader("LSystems"))
 	{
-		ImGui::SliderInt("nIterations", &lSystem_nIterations, 1, 15);
-		if (ImGui::RadioButton("2D Tree", &lSystem_BuildType, 0))
-		{
-			lSystem.SetAxiom("A");
-			//Branching binary tree rules from lab sheet
-			lSystem.ClearRules();
-			lSystem.AddRule('B', "BB");
-			lSystem.AddRule('A', "B[A]A");
-			lSystem.AddRule('[', "[");
-			lSystem.AddRule(']', "]");
-		}
-		ImGui::SameLine();
-		if (ImGui::RadioButton("3D Tree", &lSystem_BuildType, 1))
-		{
-			lSystem.SetAxiom("FA");
-			//3D tree rules from lab sheet
-			lSystem.ClearRules();
-			lSystem.AddRule('A', "[&FA][<&FA][>&FA]");
-			lSystem.AddRule('F', "F");
-			lSystem.AddRule('[', "[");
-			lSystem.AddRule(']', "]");
-			lSystem.AddRule('&', "&");
-			lSystem.AddRule('>', ">");
-			lSystem.AddRule('<', "<");
-		}
-		if (ImGui::Checkbox("Use Cylinders", &lSystem_UseCylinders))
-		{
-			if (lSystem_UseCylinders) m_Line->Clear();
-			else {
-				m_3dtree_branches.clear();
-				m_3dtree_leaves.clear();
-			}
-		}
-		if (ImGui::Button("Iterate"))
-		{
-			lSystem.Iterate();
-			if (lSystem_BuildType == 0) BuildLine2D();
-			else BuildTree3D();
-		}
 		if (ImGui::Button("Run System"))
-		{
-			lSystem.Run((unsigned)lSystem_nIterations);
-			if (lSystem_BuildType == 0) BuildLine2D();
-			else BuildTree3D();
-		}
-
-		ImGui::LabelText(lSystem.GetAxiom().c_str(), "Axiom:");
+			for (unsigned i = 0u; i < planet_trees.size(); ++i)
+				planet_trees[i]->runSystem(), planet_trees[i]->build(renderer->getDevice(), renderer->getDeviceContext());
 
 		ImGui::Text("System:");
-		ImGui::TextWrapped(lSystem.GetCurrentSystem().c_str());
+		ImGui::TextWrapped(planet_trees[0]->getCurrentSystem().c_str());
 	}
+
 	if (ImGui::CollapsingHeader("FABRIK"))
 	{
 		ImGui::Text("Goal:");
@@ -456,133 +386,4 @@ void App1::gui()
 	// Render UI
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-}
-
-void App1::BuildLine2D()
-{
-	//Clear any lines we might already have
-	m_Line->Clear();
-
-	//Get the current L-System string, right now we have a place holder
-	std::string systemString = lSystem.GetCurrentSystem();
-
-	//Initialise some variables
-	XMVECTOR pos = XMVectorReplicate(0.0f);	//Current position (0,0,0)
-	XMVECTOR dir = XMVectorSet(0, 1, 0, 1);	//Current direction is "Up"
-	XMVECTOR fwd = XMVectorSet(0, 0, 1, 1);	//Rotation axis. Our rotations happen around the "forward" vector
-	XMMATRIX currentRotation = XMMatrixRotationRollPitchYaw(0, 0, 0);
-	std::vector<XMMATRIX> rotation_stack;
-	std::vector<XMVECTOR> pos_stack;
-
-	//Go through the L-System string
-	for (int i = 0; i < systemString.length(); i++) {
-		switch (systemString[i]) {			
-			case 'A':	//Draw a line segment
-				m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
-				//TODO: draw leaf
-				break;			
-			case 'B':	//Draw a line segment and move forward
-				m_Line->AddLine(pos, pos + XMVector3Transform(dir, currentRotation));	//Add the line segment to the line mesh
-				pos += XMVector3Transform(dir, currentRotation);						//Move the position marker
-				break;
-			case '[':
-				pos_stack.push_back(pos);
-				rotation_stack.push_back(currentRotation);
-				currentRotation *= XMMatrixRotationAxis(fwd, AI_DEG_TO_RAD(45.0f));
-				break;
-			case ']':
-				pos = pos_stack.back();
-				pos_stack.pop_back();
-				currentRotation = rotation_stack.back();
-				rotation_stack.pop_back();
-				currentRotation *= XMMatrixRotationAxis(fwd, AI_DEG_TO_RAD(-45.0f));
-				break;
-		}
-	}
-	
-	//Build the vertices
-	m_Line->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
-}
-
-void App1::BuildTree3D()
-{
-	//Clear any lines we might already have
-	m_Line->Clear();
-	m_3dtree_branches.clear();
-	m_3dtree_leaves.clear();
-
-	//Get the current L-System string, right now we have a place holder
-	std::string systemString = lSystem.GetCurrentSystem();
-
-	//Initialise some variables
-	XMVECTOR pos = XMVectorReplicate(0.0f);	//Current position (0,0,0)
-	XMVECTOR dir = XMVectorSet(0, 1, 0, 1);	//Current direction is "Up"
-	XMVECTOR fwd = XMVectorSet(0, 0, 1, 1);	//Rotation axis.
-	XMMATRIX currentRotation = XMMatrixRotationRollPitchYaw(0, 0, 0);
-	std::vector<XMMATRIX> rotation_stack;
-	std::vector<XMVECTOR> pos_stack;
-	float rng = 0.f, cylinder_radius_scale = 1.f;
-
-	//Build 3D tree
-	for (int i = 0; i < systemString.length(); i++) {
-		switch (systemString[i]) {
-		case 'F':	//Draw a line segment and move forward
-			XMVECTOR step = XMVector3Transform(dir, currentRotation);
-			if(!lSystem_UseCylinders) m_Line->AddLine(pos, pos + step);	//Add the line segment to the line mesh
-			else
-			{
-				m_3dtree_branches.push_back(std::unique_ptr<CylinderMesh>(new CylinderMesh(
-					renderer->getDevice(),
-					renderer->getDeviceContext(),
-					1,
-					4,
-					XMVectorGetX(XMVector3Length(step)),
-					.1f * cylinder_radius_scale,
-					.1f * cylinder_radius_scale * .6f
-				)));
-				m_3dtree_branches.back()->m_Transform =  currentRotation * XMMatrixTranslationFromVector(pos);
-			}
-			pos += step;						//Move the position marker
-			break;
-		case 'A':
-			//Add a leave
-			if (!lSystem_UseCylinders) break;
-			m_3dtree_leaves.push_back(std::unique_ptr<Leaf>(new Leaf(renderer->getDevice(), renderer->getDeviceContext(), 2)));
-			m_3dtree_leaves.back()->m_Transform = XMMatrixScaling(.25f, .25f, .25f) * XMMatrixTranslationFromVector(pos);
-			break;
-		case '[':
-			pos_stack.push_back(pos);
-			rotation_stack.push_back(currentRotation);
-			dir *= XMVectorSet(.8f, .8f, .8f, 1.f);
-			cylinder_radius_scale *= .6f;
-			break;
-		case ']':
-			pos = pos_stack.back();
-			pos_stack.pop_back();
-			currentRotation = rotation_stack.back();
-			rotation_stack.pop_back();
-			dir /= XMVectorSet(.8f, .8f, .8f, 1.f);
-			cylinder_radius_scale /= .6f;
-			break;
-		case '&':
-			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / (3.1415f / 4.f));
-			//rng = AI_DEG_TO_RAD(20.f);
-			currentRotation *= XMMatrixRotationAxis(XMVector3Transform(fwd, currentRotation), rng);
-			break;
-		case '<':
-			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / 3.1415f);
-			//rng = AI_DEG_TO_RAD(120.f);
-			currentRotation *= XMMatrixRotationAxis(XMVector3Transform(dir, currentRotation), rng);
-			break;
-		case '>':
-			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / -3.1415f);
-			//rng = AI_DEG_TO_RAD(-120.f);
-			currentRotation *= XMMatrixRotationAxis(XMVector3Transform(dir, currentRotation), rng);
-			break;
-		default:
-			break;
-		}
-	}
-	//Build the vertices if we are rendering lines
-	if (!lSystem_UseCylinders) m_Line->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
 }

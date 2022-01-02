@@ -16,6 +16,7 @@
 #include "FabrikMesh.h"
 #include "ImprovedNoise.h"
 #include "PlanetMesh.h"
+#include "Tree.h"
 #include <memory>
 #include <vector>
 #include <array>
@@ -35,23 +36,13 @@ protected:
 	void gui();
 
 private:
-	void BuildLine2D();
-	void BuildTree3D();
-
 	std::unique_ptr<LightShader>			light_shader;
 	std::unique_ptr<PlanetShader>			planet_shader;
-	std::unique_ptr<LineMesh>				m_Line;
 	std::unique_ptr<PlaneMesh>				m_ground;
-	std::vector<unique_ptr<CylinderMesh>>	m_3dtree_branches;
-	std::vector<unique_ptr<Leaf>>			m_3dtree_leaves;
-
-	std::unique_ptr<Light>		light;
-	LSystem						lSystem;
-	int							lSystem_nIterations;
-	int							lSystem_BuildType;
-	bool						lSystem_UseCylinders;
+	std::unique_ptr<Light>					light;
 
 
+	//Fabrik
 	std::unique_ptr<SphereMesh> fabrik_goal_mesh;
 	XMFLOAT3 fabrik_goal_position;
 	bool fabrik_animate_with_noise;
@@ -75,6 +66,9 @@ private:
 	char settings_filename[64];
 	XMFLOAT4 gui_planet_shader_material_thresholds;
 	bool gui_planet_generate_on_input;
+
+	//Planet trees
+	std::vector<std::unique_ptr<Tree>> planet_trees;
 };
 
 #endif
