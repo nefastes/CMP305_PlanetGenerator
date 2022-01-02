@@ -183,7 +183,7 @@ bool App1::render()
 
 	//Render the trees of the planet
 	const std::vector<std::unique_ptr<Tree>>* trees = planet_mesh->getTrees();
-	for (unsigned i = 0u; i < trees->size(); ++i)
+	for (unsigned i = 0u; i < trees->size() && planet_mesh->isGenerating() != 3u; ++i)
 		trees->at(i)->render(
 			renderer->getDeviceContext(),
 			worldMatrix,

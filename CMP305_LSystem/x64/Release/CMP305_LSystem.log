@@ -1,31 +1,50 @@
 ﻿  compilation object save succeeded; see C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\planet_ps.cso
   compilation object save succeeded; see C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\planet_vs.cso
-  compilation object save succeeded; see C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\light_ps.cso
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\tree_ps.hlsl(1,9-12): warning X3568: 'once' : unknown pragma ignored
+  
+  compilation object save succeeded; see C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\tree_ps.cso
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\tree_vs.hlsl(1,9-12): warning X3568: 'once' : unknown pragma ignored
+  
+  compilation object save succeeded; see C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\tree_vs.cso
   App1.cpp
 C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(35,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(33,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(398,41): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(29,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(333,41): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.25.28610\include\memory(2064,56): warning C4244: 'argument': conversion from '_Ty' to 'float', possible loss of data
           with
           [
               _Ty=double
           ]
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(81): message : see reference to function template instantiation 'std::unique_ptr<FabrikMesh,std::default_delete<FabrikMesh>> std::make_unique<FabrikMesh,ID3D11Device*,ID3D11DeviceContext*,DirectX::XMFLOAT3,DirectX::XMFLOAT3,int,double,0>(ID3D11Device *&&,ID3D11DeviceContext *&&,DirectX::XMFLOAT3 &&,DirectX::XMFLOAT3 &&,int &&,double &&)' being compiled
-  farm.cpp
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(65): message : see reference to function template instantiation 'std::unique_ptr<FabrikMesh,std::default_delete<FabrikMesh>> std::make_unique<FabrikMesh,ID3D11Device*,ID3D11DeviceContext*,DirectX::XMFLOAT3,DirectX::XMFLOAT3,int,double,0>(ID3D11Device *&&,ID3D11DeviceContext *&&,DirectX::XMFLOAT3 &&,DirectX::XMFLOAT3 &&,int &&,double &&)' being compiled
   GenerateMeshTask.cpp
+  GenerateNormalsTask.cpp
+  GenerateTreeTask.cpp
   PlanetMesh.cpp
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.cpp(36,43): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.cpp(63,45): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.cpp(64,45): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.cpp(45,43): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.cpp(72,45): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.cpp(73,45): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+  CylinderMesh.cpp
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\CylinderMesh.cpp(39,22): warning C4018: '<=': signed/unsigned mismatch
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\CylinderMesh.cpp(55,22): warning C4018: '<': signed/unsigned mismatch
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\CylinderMesh.cpp(70,67): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\CylinderMesh.cpp(84,68): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\CylinderMesh.cpp(96,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\CylinderMesh.cpp(97,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  Leaf.cpp
+  LightShader.cpp
+  LSystem.cpp
   Main.cpp
 C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(35,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
   PlanetShader.cpp
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetShader.cpp(86,21): warning C4101: 'samplerDesc': unreferenced local variable
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetShader.cpp(84,21): warning C4101: 'samplerDesc': unreferenced local variable
+  Tree.cpp
+  TreeShader.cpp
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\TreeShader.cpp(78,21): warning C4101: 'samplerDesc': unreferenced local variable
   Generating code
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.h(20): warning C4172: returning address of local variable or temporary
-  420 of 2415 functions (17.4%) were compiled, the rest were copied from previous compilation.
-    269 functions were new in current compilation
-    214 functions had inline decision re-evaluated but remain unchanged
+C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.h(26): warning C4172: returning address of local variable or temporary
+  675 of 2502 functions (27.0%) were compiled, the rest were copied from previous compilation.
+    148 functions were new in current compilation
+    131 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
 DXFramework.lib(WICTextureLoader.obj) : warning LNK4099: PDB 'DirectXTK.pdb' was not found with 'DXFramework.lib(WICTextureLoader.obj)' or at 'C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\DirectXTK.pdb'; linking object as if no debug info
 DXFramework.lib(pch.obj) : warning LNK4099: PDB 'DirectXTK.pdb' was not found with 'DXFramework.lib(pch.obj)' or at 'C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\DirectXTK.pdb'; linking object as if no debug info

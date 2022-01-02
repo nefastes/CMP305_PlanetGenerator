@@ -808,6 +808,7 @@ void PlanetMesh::GenerateTrees(ID3D11Device* device, ID3D11DeviceContext* device
 
 	//Clean any trees that have been previously generated
 	planet_trees_.clear();
+
 	//Retrieve the number of vertices per face
 	int n_triangles_per_face = vertexCount / 3 / 6;
 	for (unsigned face_number = 0u; face_number < 6u; ++face_number)
