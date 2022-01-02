@@ -20,14 +20,14 @@ void Tree::render(ID3D11DeviceContext* device_context, XMMATRIX& world, XMMATRIX
 	//Draw the branches
 	for (unsigned i = 0u; i < tree_branches_.size(); ++i)
 	{
-		tree_shader_.setShaderParameters(device_context, world * tree_transform_ * tree_branches_[i]->m_Transform, view, proj, light, true);
+		tree_shader_.setShaderParameters(device_context, tree_branches_[i]->m_Transform * tree_transform_ * world, view, proj, light, true);
 		tree_branches_[i]->sendData(device_context);
 		tree_shader_.render(device_context, tree_branches_[i]->getIndexCount());
 	}
 	//Draw the leaves
 	for (unsigned i = 0u; i < tree_leaves_.size(); ++i)
 	{
-		tree_shader_.setShaderParameters(device_context, world * tree_transform_ * tree_leaves_[i]->m_Transform, view, proj, light, false);
+		tree_shader_.setShaderParameters(device_context, tree_leaves_[i]->m_Transform * tree_transform_ * world, view, proj, light, false);
 		tree_leaves_[i]->sendData(device_context);
 		tree_shader_.render(device_context, tree_leaves_[i]->getIndexCount());
 	}

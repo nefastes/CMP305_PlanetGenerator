@@ -9,14 +9,8 @@
 #include "DXF.h"	// include dxframework
 #include "LightShader.h"
 #include "PlanetShader.h"
-#include "LineMesh.h"
-#include "CylinderMesh.h"
-#include "Leaf.h"
-#include "LSystem.h"
 #include "FabrikMesh.h"
-#include "ImprovedNoise.h"
 #include "PlanetMesh.h"
-#include "Tree.h"
 #include <memory>
 #include <vector>
 #include <array>
@@ -66,9 +60,6 @@ private:
 	char settings_filename[64];
 	XMFLOAT4 gui_planet_shader_material_thresholds;
 	bool gui_planet_generate_on_input;
-
-	//Planet trees
-	std::vector<std::unique_ptr<Tree>> planet_trees;
 };
 
 #endif

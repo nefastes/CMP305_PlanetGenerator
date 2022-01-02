@@ -2,6 +2,7 @@
 #include "BaseMesh.h"
 #include "farm.h"
 #include "GenerateMeshTask.h"
+#include "Tree.h"
 #include <vector>
 #include <memory>
 #include <fstream>
@@ -9,7 +10,7 @@
 class PlanetMesh : public BaseMesh
 {
 public:
-	PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, unsigned resolution = 20u);
+	PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, HWND hwnd, unsigned resolution = 20u);
 	~PlanetMesh();
 
 	bool does_file_exist(const char* filename, const int namesize);
@@ -18,7 +19,7 @@ public:
 	void GenerateVertices();
 	const bool& isGeneratingVertices() { return farm.isRunning(); }
 	const float& getGenerationProgress() { return farm.getProgressPercentage(); }
-	void GenerateMesh(ID3D11Device* device);
+	void GenerateMesh(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd);
 
 	void setResolution(const unsigned& r) { resolution_ = r; }
 	//void setRadius(const float& r) { radius_ = r; }
@@ -27,6 +28,8 @@ public:
 	//float* getRadius() { return &radius_; }
 	bool* getDebug() { return &debug_building_; }
 	std::vector<std::unique_ptr<NoiseLayerSettings>>* getNoiseLayers() { return &noise_layers_; }
+	const std::vector<std::unique_ptr<Tree>>* getTrees() { return &planet_trees_; }
+	float* getTreeScale() { return &planet_tree_scale_; }
 
 private:
 	void initBuffers(ID3D11Device* device);
@@ -45,5 +48,9 @@ private:
 	Farm farm;
 	VertexType* vertices;
 	unsigned long* indices;
+
+	//Planet trees
+	std::vector<std::unique_ptr<Tree>> planet_trees_;
+	float planet_tree_scale_;
 };
 

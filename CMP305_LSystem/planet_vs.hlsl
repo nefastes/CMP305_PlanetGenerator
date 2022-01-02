@@ -7,8 +7,6 @@ cbuffer MatrixBuffer : register(b0)
 
 cbuffer Settings : register(b1)
 {
-	float noise_max;
-	float3 padding;
 	float4 material_thresholds;	//x snow, y rock, z grass, w beach
 };
 

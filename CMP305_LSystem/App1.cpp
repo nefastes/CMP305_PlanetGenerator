@@ -70,9 +70,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 
 	//Planet
-	planet_mesh = std::make_unique<PlanetMesh>(renderer->getDevice(), renderer->getDeviceContext());
-	//test tree
-	planet_trees.push_back(std::make_unique<Tree>(renderer->getDevice(), renderer->getDeviceContext(), hwnd));
+	planet_mesh = std::make_unique<PlanetMesh>(renderer->getDevice(), renderer->getDeviceContext(), hwnd);
 }
 
 App1::~App1()
@@ -147,14 +145,6 @@ bool App1::render()
 	worldMatrix = renderer->getWorldMatrix();
 	viewMatrix = camera->getViewMatrix();
 	projectionMatrix = renderer->getProjectionMatrix();
-	for (unsigned i = 0u; i < planet_trees.size(); ++i)
-		planet_trees[i]->render(
-			renderer->getDeviceContext(),
-			worldMatrix,
-			viewMatrix,
-			projectionMatrix,
-			light.get()
-		);
 
 	/*if (fabrik_mesh->getIndexCount())
 	{
@@ -185,10 +175,22 @@ bool App1::render()
 	light_shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());*/
 
 
-	/*worldMatrix = XMMatrixRotationRollPitchYaw(gui_planet_rotation.y, gui_planet_rotation.z, gui_planet_rotation.x);
+	//Render the planet
+	worldMatrix = XMMatrixRotationRollPitchYaw(gui_planet_rotation.y, gui_planet_rotation.z, gui_planet_rotation.x);
 	planet_mesh->sendData(renderer->getDeviceContext());
 	planet_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, light.get(), gui_planet_shader_material_thresholds);
-	planet_shader->render(renderer->getDeviceContext(), planet_mesh->getIndexCount());*/
+	planet_shader->render(renderer->getDeviceContext(), planet_mesh->getIndexCount());
+
+	//Render the trees of the planet
+	const std::vector<std::unique_ptr<Tree>>* trees = planet_mesh->getTrees();
+	for (unsigned i = 0u; i < trees->size(); ++i)
+		trees->at(i)->render(
+			renderer->getDeviceContext(),
+			worldMatrix,
+			viewMatrix,
+			projectionMatrix,
+			light.get()
+		);
 
 	// Render GUI
 	gui();
@@ -213,12 +215,13 @@ void App1::gui()
 
 	if (ImGui::CollapsingHeader("LSystems"))
 	{
+		const std::vector<std::unique_ptr<Tree>>* trees = planet_mesh->getTrees();
 		if (ImGui::Button("Run System"))
-			for (unsigned i = 0u; i < planet_trees.size(); ++i)
-				planet_trees[i]->runSystem(), planet_trees[i]->build(renderer->getDevice(), renderer->getDeviceContext());
+			for (unsigned i = 0u; i < trees->size(); ++i)
+				trees->at(i)->runSystem(), trees->at(i)->build(renderer->getDevice(), renderer->getDeviceContext());
 
 		ImGui::Text("System:");
-		ImGui::TextWrapped(planet_trees[0]->getCurrentSystem().c_str());
+		ImGui::TextWrapped(trees->at(0)->getCurrentSystem().c_str());	//Only get the first tree as a debug output
 	}
 
 	if (ImGui::CollapsingHeader("FABRIK"))
@@ -309,6 +312,7 @@ void App1::gui()
 				ImGui::OpenPopup("Generation");
 			}
 		need_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
+		need_generation |= ImGui::DragFloat("Tree Scale", planet_mesh->getTreeScale(), 0.001f);
 		//need_generation |= ImGui::SliderFloat("Radius", planet_mesh->getRadius(), .1f, 100.f);
 		ImGui::DragFloat3("Roll Pitch Yaw", &gui_planet_rotation.x, .01f);
 
@@ -328,7 +332,7 @@ void App1::gui()
 			int n_elements = noise_layers->size();
 			for (int i = n_elements; i < gui_planet_noise_n_layers; ++i) noise_layers->push_back(std::make_unique<NoiseLayerSettings>());
 			for (int i = n_elements; i > gui_planet_noise_n_layers; --i) noise_layers->pop_back();
-			if (noise_layers->size() != n_elements) planet_mesh->GenerateMesh(renderer->getDevice());
+			if (noise_layers->size() != n_elements) planet_mesh->GenerateMesh(renderer->getDevice(), renderer->getDeviceContext(), wnd);
 		}
 		for (unsigned i = 0u; i < noise_layers->size(); ++i)
 		{
@@ -376,7 +380,7 @@ void App1::gui()
 			}
 			else
 			{
-				planet_mesh->GenerateMesh(renderer->getDevice());
+				planet_mesh->GenerateMesh(renderer->getDevice(), renderer->getDeviceContext(), wnd);
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
