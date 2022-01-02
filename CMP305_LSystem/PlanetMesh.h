@@ -19,7 +19,7 @@ public:
 	void GenerateVertices();
 	const bool& isGeneratingVertices() { return farm.isRunning(); }
 	const float& getGenerationProgress() { return farm.getProgressPercentage(); }
-	void GenerateMesh(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd);
+	void GenerateMesh(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd, float grass_low_threshold, float grass_high_threshold);
 
 	void setResolution(const unsigned& r) { resolution_ = r; }
 	//void setRadius(const float& r) { radius_ = r; }
@@ -30,6 +30,7 @@ public:
 	std::vector<std::unique_ptr<NoiseLayerSettings>>* getNoiseLayers() { return &noise_layers_; }
 	const std::vector<std::unique_ptr<Tree>>* getTrees() { return &planet_trees_; }
 	float* getTreeScale() { return &planet_tree_scale_; }
+	unsigned* getNumberTreesPerFace() { return &n_trees_per_face_; }
 
 private:
 	void initBuffers(ID3D11Device* device);
@@ -52,5 +53,7 @@ private:
 	//Planet trees
 	std::vector<std::unique_ptr<Tree>> planet_trees_;
 	float planet_tree_scale_;
+	//Define a maximum amount of trees per face
+	unsigned n_trees_per_face_;
 };
 

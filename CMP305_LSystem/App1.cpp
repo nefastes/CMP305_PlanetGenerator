@@ -313,7 +313,7 @@ void App1::gui()
 			}
 		need_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
 		need_generation |= ImGui::DragFloat("Tree Scale", planet_mesh->getTreeScale(), 0.001f);
-		//need_generation |= ImGui::SliderFloat("Radius", planet_mesh->getRadius(), .1f, 100.f);
+		need_generation |= ImGui::DragInt("N Trees Per Face", (int*)planet_mesh->getNumberTreesPerFace(), 1);
 		ImGui::DragFloat3("Roll Pitch Yaw", &gui_planet_rotation.x, .01f);
 
 		ImGui::Separator();
@@ -332,7 +332,8 @@ void App1::gui()
 			int n_elements = noise_layers->size();
 			for (int i = n_elements; i < gui_planet_noise_n_layers; ++i) noise_layers->push_back(std::make_unique<NoiseLayerSettings>());
 			for (int i = n_elements; i > gui_planet_noise_n_layers; --i) noise_layers->pop_back();
-			if (noise_layers->size() != n_elements) planet_mesh->GenerateMesh(renderer->getDevice(), renderer->getDeviceContext(), wnd);
+			if (noise_layers->size() != n_elements)
+				planet_mesh->GenerateMesh(renderer->getDevice(), renderer->getDeviceContext(), wnd, gui_planet_shader_material_thresholds.z, gui_planet_shader_material_thresholds.y);
 		}
 		for (unsigned i = 0u; i < noise_layers->size(); ++i)
 		{
@@ -380,7 +381,7 @@ void App1::gui()
 			}
 			else
 			{
-				planet_mesh->GenerateMesh(renderer->getDevice(), renderer->getDeviceContext(), wnd);
+				planet_mesh->GenerateMesh(renderer->getDevice(), renderer->getDeviceContext(), wnd, gui_planet_shader_material_thresholds.z, gui_planet_shader_material_thresholds.y);
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();

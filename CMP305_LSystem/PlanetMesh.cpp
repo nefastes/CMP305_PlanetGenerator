@@ -1,11 +1,11 @@
 #include "PlanetMesh.h"
 
 PlanetMesh::PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, HWND hwnd, unsigned resolution) :
-	resolution_(resolution), radius_(1.f), debug_building_(false), planet_tree_scale_(.075f)
+	resolution_(resolution), radius_(1.f), debug_building_(false), planet_tree_scale_(.075f), n_trees_per_face_(20u)
 {
 	noise_layers_.push_back(std::make_unique<NoiseLayerSettings>());
 	GenerateVertices();
-	GenerateMesh(device, deviceContext, hwnd);
+	GenerateMesh(device, deviceContext, hwnd, .1f, .5f);
 }
 
 PlanetMesh::~PlanetMesh()
@@ -761,14 +761,11 @@ run_farm:
 	farm.run();
 }
 
-void PlanetMesh::GenerateMesh(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd)
+void PlanetMesh::GenerateMesh(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd, float grass_low_threshold, float grass_high_threshold)
 {	
 	//This function should not be called before GenerateVertices has been called and a check of the farm status has completed
 	//Clean the farm since the generation is complete
 	farm.clean();
-
-	//Clean any trees that have been previously generated
-	planet_trees_.clear();
 
 	//Recalculate normals
 	//Set up normals for the face
@@ -802,19 +799,33 @@ void PlanetMesh::GenerateMesh(ID3D11Device* device, ID3D11DeviceContext* device_
 			cross.z /= mag;
 			vertices[k + l].normal = cross;
 		}
-		//1 % chance to spawn a tree on this triangle
-		if (rand() % 100 < 1)
+	}
+
+	//Clean any trees that have been previously generated
+	planet_trees_.clear();
+	//Retrieve the number of vertices per face
+	int n_triangles_per_face = vertexCount / 3 / 6;
+	for (unsigned face_number = 0u; face_number < 6u; ++face_number)
+	{
+		for (unsigned short n = 0u; n < n_trees_per_face_; ++n)
 		{
+			//Generate random tree positions
+			int index = rand() % n_triangles_per_face + n_triangles_per_face * 3 * face_number;
+
+			//Spawn trees if possible
 			//Ensure the vertex is within grass distance
-			XMVECTOR position = (XMLoadFloat3(&vertices[k].position) + XMLoadFloat3(&vertices[k + 1].position) + XMLoadFloat3(&vertices[k + 2].position)) / 3.f;
-			float vertex_distance = XMVectorGetX(XMVector3Length(position)) - radius_;
-			if (vertex_distance < .1f || vertex_distance > .5f) continue;
+			XMVECTOR position = (XMLoadFloat3(&vertices[index].position) + XMLoadFloat3(&vertices[index + 1].position) + XMLoadFloat3(&vertices[index + 2].position)) / 3.f;
+			float pos_x = XMVectorGetX(position);
+			float pos_y = XMVectorGetY(position);
+			float pos_z = XMVectorGetZ(position);
+			float vertex_distance = (pos_x * pos_x + pos_y * pos_y + pos_z * pos_z) - radius_;
+			if (vertex_distance < grass_low_threshold || vertex_distance > grass_high_threshold) continue;
 
 			//Scale the tree
 			XMMATRIX transform = XMMatrixScaling(planet_tree_scale_, planet_tree_scale_, planet_tree_scale_);
 			//Rotate the tree so that it's up direction is along the surface normal
-			XMVECTOR up = XMVector3Normalize(position);
-			XMVECTOR normal = (XMLoadFloat3(&vertices[k].normal) + XMLoadFloat3(&vertices[k + 1].normal) + XMLoadFloat3(&vertices[k + 2].normal)) / 3.f;
+			XMVECTOR up = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+			XMVECTOR normal = (XMLoadFloat3(&vertices[index].normal) + XMLoadFloat3(&vertices[index + 1].normal) + XMLoadFloat3(&vertices[index + 2].normal)) / 3.f;
 			XMVECTOR rotation_axis = XMVector3Cross(up, normal);
 			float rotation_angle = XMVectorGetX(XMVector3AngleBetweenNormals(up, normal));
 			if (rotation_angle < -10.f || rotation_angle > 10.f) continue;	//Ensure a tree can't be placed on a steep surface

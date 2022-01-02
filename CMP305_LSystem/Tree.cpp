@@ -111,7 +111,7 @@ void Tree::build(ID3D11Device* device, ID3D11DeviceContext* device_context)
 			cylinder_radius_scale /= .6f;
 			break;
 		case '&':
-			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / (3.1415f / 4.f));
+			rng = static_cast<float>(rand()) / static_cast<float>(RAND_MAX / (3.1415f / 5.f));
 			currentRotation *= XMMatrixRotationAxis(XMVector3Transform(fwd, currentRotation), rng);
 			break;
 		case '<':
