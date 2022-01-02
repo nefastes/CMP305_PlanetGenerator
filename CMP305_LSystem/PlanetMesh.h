@@ -2,6 +2,8 @@
 #include "BaseMesh.h"
 #include "farm.h"
 #include "GenerateMeshTask.h"
+#include "GenerateNormalsTask.h"
+#include "GenerateTreeTask.h"
 #include "Tree.h"
 #include <vector>
 #include <memory>
@@ -21,7 +23,7 @@ public:
 	void GenerateTrees(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd, float grass_low_threshold, float grass_high_threshold);
 	void GenerateMesh(ID3D11Device* device);
 
-	const bool& isGenerating() { return farm.isRunning(); }
+	const uint8_t& isGenerating() { return farm.isRunning() * current_task; }
 	const float& getGenerationProgress() { return farm.getProgressPercentage(); }
 
 	void setResolution(const unsigned& r) { resolution_ = r; }
@@ -51,6 +53,7 @@ private:
 
 	//A farm for mulithreading
 	Farm farm;
+	uint8_t current_task;	//this variable is a simple byte that flags which task is being generated: 0 - OFF, 1 - Vertices, 2 - Normals, 3 - Trees 
 	VertexType* vertices;
 	unsigned long* indices;
 

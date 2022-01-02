@@ -1,13 +1,2 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(467,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (CMP305_Base.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  App1.cpp
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(35,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(29,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(333,41): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.25.28610\include\memory(2064,56): warning C4244: 'argument': conversion from '_Ty' to 'float', possible loss of data
-          with
-          [
-              _Ty=double
-          ]
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(65): message : see reference to function template instantiation 'std::unique_ptr<FabrikMesh,std::default_delete<FabrikMesh>> std::make_unique<FabrikMesh,ID3D11Device*,ID3D11DeviceContext*,DirectX::XMFLOAT3,DirectX::XMFLOAT3,int,double,0>(ID3D11Device *&&,ID3D11DeviceContext *&&,DirectX::XMFLOAT3 &&,DirectX::XMFLOAT3 &&,int &&,double &&)' being compiled
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.h(21): warning C4172: returning address of local variable or temporary
   CMP305_LSystem.vcxproj -> C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Debug\CMP305_LSystem.exe

@@ -298,7 +298,7 @@ void App1::gui()
 		{
 			gui_planet_noise_n_layers = planet_mesh->ImportSettings(renderer->getDevice(), settings_filename, 64);
 			planet_mesh->GenerateVertices();
-			ImGui::OpenPopup("Generation");
+			ImGui::OpenPopup("Generation Vertices");
 		}
 
 		ImGui::Separator();
@@ -309,7 +309,7 @@ void App1::gui()
 			if (ImGui::Button("Generate Mesh"))
 			{
 				planet_mesh->GenerateVertices();
-				ImGui::OpenPopup("Generation");
+				ImGui::OpenPopup("Generation Vertices");
 			}
 		need_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
 		need_generation |= ImGui::DragFloat("Tree Scale", planet_mesh->getTreeScale(), 0.001f);
@@ -333,8 +333,7 @@ void App1::gui()
 			int n_elements = noise_layers->size();
 			for (int i = n_elements; i < gui_planet_noise_n_layers; ++i) noise_layers->push_back(std::make_unique<NoiseLayerSettings>());
 			for (int i = n_elements; i > gui_planet_noise_n_layers; --i) noise_layers->pop_back();
-			if (noise_layers->size() != n_elements)
-				planet_mesh->GenerateMesh(renderer->getDevice(), renderer->getDeviceContext(), wnd, gui_planet_shader_material_thresholds.z, gui_planet_shader_material_thresholds.y);
+			need_generation |= noise_layers->size() != n_elements;
 		}
 		for (unsigned i = 0u; i < noise_layers->size(); ++i)
 		{
@@ -371,21 +370,54 @@ void App1::gui()
 		if (need_generation && gui_planet_generate_on_input)
 		{
 			planet_mesh->GenerateVertices();
-			ImGui::OpenPopup("Generation");
+			ImGui::OpenPopup("Generation Vertices");
 		}
-		if (ImGui::BeginPopupModal("Generation"))
+		if (ImGui::BeginPopupModal("Generation Vertices"))
 		{
-			if (planet_mesh->isGeneratingVertices())
+			if (planet_mesh->isGenerating() == 1u)
 			{
-				ImGui::Text("Generating Planet...");
+				ImGui::Text("Generating Vertices...");
 				ImGui::ProgressBar(planet_mesh->getGenerationProgress(), ImVec2(400, 20));
+				ImGui::EndPopup();
 			}
 			else
 			{
-				planet_mesh->GenerateMesh(renderer->getDevice(), renderer->getDeviceContext(), wnd, gui_planet_shader_material_thresholds.z, gui_planet_shader_material_thresholds.y);
 				ImGui::CloseCurrentPopup();
+				ImGui::EndPopup();
+				planet_mesh->GenerateNormals();
+				ImGui::OpenPopup("Generation Normals");
 			}
-			ImGui::EndPopup();
+		}
+		if (ImGui::BeginPopupModal("Generation Normals"))
+		{
+			if (planet_mesh->isGenerating() == 2u)
+			{
+				ImGui::Text("Generating Normals...");
+				ImGui::ProgressBar(planet_mesh->getGenerationProgress(), ImVec2(400, 20));
+				ImGui::EndPopup();
+			}
+			else
+			{
+				ImGui::CloseCurrentPopup();
+				ImGui::EndPopup();
+				planet_mesh->GenerateTrees(renderer->getDevice(), renderer->getDeviceContext(), wnd, gui_planet_shader_material_thresholds.z, gui_planet_shader_material_thresholds.y);
+				ImGui::OpenPopup("Generation Trees");
+			}
+		}
+		if (ImGui::BeginPopupModal("Generation Trees"))
+		{
+			if (planet_mesh->isGenerating() == 3u)
+			{
+				ImGui::Text("Generating Trees...");
+				ImGui::ProgressBar(planet_mesh->getGenerationProgress(), ImVec2(400, 20));
+				ImGui::EndPopup();
+			}
+			else
+			{
+				planet_mesh->GenerateMesh(renderer->getDevice());
+				ImGui::CloseCurrentPopup();
+				ImGui::EndPopup();
+			}
 		}
 	}
 

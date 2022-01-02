@@ -1,11 +1,14 @@
 #include "PlanetMesh.h"
 
 PlanetMesh::PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, HWND hwnd, unsigned resolution) :
-	resolution_(resolution), radius_(1.f), debug_building_(false), planet_tree_scale_(.075f), n_trees_per_face_(20u), tree_max_angle_to_normal_(10.f)
+	resolution_(resolution), radius_(1.f), debug_building_(false), planet_tree_scale_(.075f), n_trees_per_face_(20u),
+	tree_max_angle_to_normal_(10.f), current_task(0u)
 {
 	noise_layers_.push_back(std::make_unique<NoiseLayerSettings>());
 	GenerateVertices();
-	GenerateMesh(device, deviceContext, hwnd, .1f, .5f);
+	GenerateNormals();
+	GenerateTrees(device, deviceContext, hwnd, .1f, .5f);
+	GenerateMesh(device);
 }
 
 PlanetMesh::~PlanetMesh()
@@ -770,6 +773,7 @@ void PlanetMesh::GenerateVertices()
 
 run_farm:
 	//Run the thread farm to calculate the vertices
+	current_task = 1u;
 	farm.run();
 }
 
@@ -784,39 +788,21 @@ void PlanetMesh::GenerateNormals()
 	for (int k = 0; k < vertexCount - 3; k += 3) {
 		for (int l = 0; l < 3; ++l)
 		{
-			//Calculate the plane normals
-			XMFLOAT3 a, b, c;	//Three corner vertices
-			XMFLOAT3 cross;		//Cross product result
-			float mag;			//Magnitude of the cross product (so we can normalize it)
-			XMFLOAT3 ab;		//Edge 1
-			XMFLOAT3 ac;		//Edge 2
-
-			//Retrieve the three vertices
-			a = vertices[k + warp(l, 0, 2)].position;
-			b = vertices[k + warp(l + 1, 0, 2)].position;
-			c = vertices[k + warp(l + 2, 0, 2)].position;
-
-			//Two edges
-			ab = XMFLOAT3(c.x - a.x, c.y - a.y, c.z - a.z);
-			ac = XMFLOAT3(b.x - a.x, b.y - a.y, b.z - a.z);
-
-			//Calculate the cross product
-			cross.x = ab.y * ac.z - ab.z * ac.y;
-			cross.y = ab.z * ac.x - ab.x * ac.z;
-			cross.z = ab.x * ac.y - ab.y * ac.x;
-			mag = (cross.x * cross.x) + (cross.y * cross.y) + (cross.z * cross.z);
-			mag = sqrtf(mag);
-			cross.x /= mag;
-			cross.y /= mag;
-			cross.z /= mag;
-			vertices[k + l].normal = cross;
+			farm.add_task(new GenerateNormalsTask(
+				&vertices[k + l].normal,
+				vertices[k + warp(l, 0, 2)].position,
+				vertices[k + warp(l + 1, 0, 2)].position,
+				vertices[k + warp(l + 2, 0, 2)].position
+			));
 		}
 	}
+	current_task = 2u;
+	farm.run();
 }
 
 void PlanetMesh::GenerateTrees(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd, float grass_low_threshold, float grass_high_threshold)
 {
-	//This function should not be called before GenerateVertices has been called and a check of the farm status has completed
+	//This function should not be called before GeneratenNormals has been called and a check of the farm status has completed
 	//Clean the farm since the generation is complete
 	farm.clean();
 
@@ -831,41 +817,25 @@ void PlanetMesh::GenerateTrees(ID3D11Device* device, ID3D11DeviceContext* device
 			//Generate random tree positions
 			int index = rand() % n_triangles_per_face + n_triangles_per_face * 3 * face_number;
 
-			//Spawn trees if possible
-			//Ensure the vertex is within grass distance
-			XMVECTOR position = (XMLoadFloat3(&vertices[index].position) + XMLoadFloat3(&vertices[index + 1].position) + XMLoadFloat3(&vertices[index + 2].position)) / 3.f;
-			float pos_x = XMVectorGetX(position);
-			float pos_y = XMVectorGetY(position);
-			float pos_z = XMVectorGetZ(position);
-			float vertex_distance = (pos_x * pos_x + pos_y * pos_y + pos_z * pos_z) - radius_;
-			if (vertex_distance < grass_low_threshold || vertex_distance > grass_high_threshold) continue;
-
-			//Scale the tree
-			XMMATRIX transform = XMMatrixScaling(planet_tree_scale_, planet_tree_scale_, planet_tree_scale_);
-			//Rotate the tree so that it's up direction is along the surface normal
-			XMVECTOR up = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-			XMVECTOR normal = (XMLoadFloat3(&vertices[index].normal) + XMLoadFloat3(&vertices[index + 1].normal) + XMLoadFloat3(&vertices[index + 2].normal)) / 3.f;
-			XMVECTOR rotation_axis = XMVector3Cross(up, normal);
-			float rotation_angle = XMVectorGetX(XMVector3AngleBetweenNormals(up, normal));
-			if (rotation_angle < -tree_max_angle_to_normal_ || rotation_angle > tree_max_angle_to_normal_) continue;	//Ensure a tree can't be placed on a steep surface
-			transform = XMMatrixMultiply(transform, XMMatrixRotationAxis(rotation_axis, rotation_angle));
-			//Translate the tree to the vertex's position
-			transform = XMMatrixMultiply(transform, XMMatrixTranslation(XMVectorGetX(position), XMVectorGetY(position), XMVectorGetZ(position)));
-			planet_trees_.push_back(std::make_unique<Tree>(
-				device,
-				device_context,
-				hwnd,
-				transform
-				));
+			farm.add_task(new GenerateTreeTask(
+				device, device_context, hwnd,
+				grass_low_threshold, grass_high_threshold, planet_tree_scale_, tree_max_angle_to_normal_,
+				vertices[index].position, vertices[index + 1].position, vertices[index + 2].position,
+				vertices[index].normal, vertices[index + 1].normal, vertices[index + 2].normal,
+				&planet_trees_
+			));
 		}
 	}
+	current_task = 3u;
+	farm.run();
 }
 
 void PlanetMesh::GenerateMesh(ID3D11Device* device)
 {	
-	//This function should not be called before GenerateVertices has been called and a check of the farm status has completed
+	//This function should not be called before GenerateTrees has been called and a check of the farm status has completed
 	//Clean the farm since the generation is complete
 	farm.clean();
+	current_task = 0u;
 
 	//Check if the cube sphere was already generated, in the event of regeneration
 	if (vertexBuffer) vertexBuffer->Release(), vertexBuffer = NULL;
@@ -909,5 +879,4 @@ void PlanetMesh::GenerateMesh(ID3D11Device* device)
 
 void PlanetMesh::initBuffers(ID3D11Device* device)
 {
-
 }

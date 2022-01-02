@@ -81,6 +81,12 @@
     <ClCompile Include="TreeShader.cpp">
       <Filter>Source Files\Shaders</Filter>
     </ClCompile>
+    <ClCompile Include="GenerateNormalsTask.cpp">
+      <Filter>Source Files\MultiThreading</Filter>
+    </ClCompile>
+    <ClCompile Include="GenerateTreeTask.cpp">
+      <Filter>Source Files\MultiThreading</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App1.h">
@@ -130,6 +136,12 @@
     </ClInclude>
     <ClInclude Include="TreeShader.h">
       <Filter>Header Files\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="GenerateNormalsTask.h">
+      <Filter>Header Files\MultiThreading</Filter>
+    </ClInclude>
+    <ClInclude Include="GenerateTreeTask.h">
+      <Filter>Header Files\MultiThreading</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
