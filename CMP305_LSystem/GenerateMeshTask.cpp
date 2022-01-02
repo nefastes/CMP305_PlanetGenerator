@@ -10,6 +10,7 @@ GenerateMeshTask::GenerateMeshTask(XMFLOAT3* v_pos, const XMFLOAT3& cube_vertex_
 
 GenerateMeshTask::~GenerateMeshTask()
 {
+	task_vertex_position_ = nullptr;
 }
 
 void GenerateMeshTask::run()

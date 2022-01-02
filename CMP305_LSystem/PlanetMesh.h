@@ -17,9 +17,12 @@ public:
 	void ExportSettings(const char* filename, const int namesize);
 	unsigned ImportSettings(ID3D11Device* device, const char* filename, const int namesize);
 	void GenerateVertices();
-	const bool& isGeneratingVertices() { return farm.isRunning(); }
+	void GenerateNormals();
+	void GenerateTrees(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd, float grass_low_threshold, float grass_high_threshold);
+	void GenerateMesh(ID3D11Device* device);
+
+	const bool& isGenerating() { return farm.isRunning(); }
 	const float& getGenerationProgress() { return farm.getProgressPercentage(); }
-	void GenerateMesh(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd, float grass_low_threshold, float grass_high_threshold);
 
 	void setResolution(const unsigned& r) { resolution_ = r; }
 	//void setRadius(const float& r) { radius_ = r; }
@@ -31,6 +34,7 @@ public:
 	const std::vector<std::unique_ptr<Tree>>* getTrees() { return &planet_trees_; }
 	float* getTreeScale() { return &planet_tree_scale_; }
 	unsigned* getNumberTreesPerFace() { return &n_trees_per_face_; }
+	float* getTreeNormalMaxAngle() { return &tree_max_angle_to_normal_; }
 
 private:
 	void initBuffers(ID3D11Device* device);
@@ -55,5 +59,6 @@ private:
 	float planet_tree_scale_;
 	//Define a maximum amount of trees per face
 	unsigned n_trees_per_face_;
+	float tree_max_angle_to_normal_;
 };
 

@@ -1,7 +1,7 @@
 #include "PlanetMesh.h"
 
 PlanetMesh::PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, HWND hwnd, unsigned resolution) :
-	resolution_(resolution), radius_(1.f), debug_building_(false), planet_tree_scale_(.075f), n_trees_per_face_(20u)
+	resolution_(resolution), radius_(1.f), debug_building_(false), planet_tree_scale_(.075f), n_trees_per_face_(20u), tree_max_angle_to_normal_(10.f)
 {
 	noise_layers_.push_back(std::make_unique<NoiseLayerSettings>());
 	GenerateVertices();
@@ -11,6 +11,12 @@ PlanetMesh::PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 PlanetMesh::~PlanetMesh()
 {
 	BaseMesh::~BaseMesh();
+	//Release the vertex array if existent
+	if (vertices != 0)
+	{
+		delete[] vertices;
+		vertices = 0;
+	}
 }
 
 bool PlanetMesh::does_file_exist(const char* filename, const int namesize)
@@ -84,6 +90,12 @@ void PlanetMesh::GenerateVertices()
 	//There are as many indices as vertices
 	indexCount = vertexCount;
 	// Create the vertex and index array.
+	//Release the vertex array if existent
+	if (vertices != 0)
+	{
+		delete[] vertices;
+		vertices = 0;
+	}
 	vertices = new VertexType[vertexCount];
 	indices = new unsigned long[indexCount];
 
@@ -761,8 +773,8 @@ run_farm:
 	farm.run();
 }
 
-void PlanetMesh::GenerateMesh(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd, float grass_low_threshold, float grass_high_threshold)
-{	
+void PlanetMesh::GenerateNormals()
+{
 	//This function should not be called before GenerateVertices has been called and a check of the farm status has completed
 	//Clean the farm since the generation is complete
 	farm.clean();
@@ -800,6 +812,13 @@ void PlanetMesh::GenerateMesh(ID3D11Device* device, ID3D11DeviceContext* device_
 			vertices[k + l].normal = cross;
 		}
 	}
+}
+
+void PlanetMesh::GenerateTrees(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd, float grass_low_threshold, float grass_high_threshold)
+{
+	//This function should not be called before GenerateVertices has been called and a check of the farm status has completed
+	//Clean the farm since the generation is complete
+	farm.clean();
 
 	//Clean any trees that have been previously generated
 	planet_trees_.clear();
@@ -828,7 +847,7 @@ void PlanetMesh::GenerateMesh(ID3D11Device* device, ID3D11DeviceContext* device_
 			XMVECTOR normal = (XMLoadFloat3(&vertices[index].normal) + XMLoadFloat3(&vertices[index + 1].normal) + XMLoadFloat3(&vertices[index + 2].normal)) / 3.f;
 			XMVECTOR rotation_axis = XMVector3Cross(up, normal);
 			float rotation_angle = XMVectorGetX(XMVector3AngleBetweenNormals(up, normal));
-			if (rotation_angle < -10.f || rotation_angle > 10.f) continue;	//Ensure a tree can't be placed on a steep surface
+			if (rotation_angle < -tree_max_angle_to_normal_ || rotation_angle > tree_max_angle_to_normal_) continue;	//Ensure a tree can't be placed on a steep surface
 			transform = XMMatrixMultiply(transform, XMMatrixRotationAxis(rotation_axis, rotation_angle));
 			//Translate the tree to the vertex's position
 			transform = XMMatrixMultiply(transform, XMMatrixTranslation(XMVectorGetX(position), XMVectorGetY(position), XMVectorGetZ(position)));
@@ -840,6 +859,13 @@ void PlanetMesh::GenerateMesh(ID3D11Device* device, ID3D11DeviceContext* device_
 				));
 		}
 	}
+}
+
+void PlanetMesh::GenerateMesh(ID3D11Device* device)
+{	
+	//This function should not be called before GenerateVertices has been called and a check of the farm status has completed
+	//Clean the farm since the generation is complete
+	farm.clean();
 
 	//Check if the cube sphere was already generated, in the event of regeneration
 	if (vertexBuffer) vertexBuffer->Release(), vertexBuffer = NULL;
@@ -875,9 +901,8 @@ void PlanetMesh::GenerateMesh(ID3D11Device* device, ID3D11DeviceContext* device_
 	// Create the index buffer.
 	device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer);
 
-	// Release the arrays now that the vertex and index buffers have been created and loaded.
-	delete[] vertices;
-	vertices = 0;
+	//Do not release the vertex array as we may want to regenerate the normals or the trees only
+	//Release the index array
 	delete[] indices;
 	indices = 0;
 }

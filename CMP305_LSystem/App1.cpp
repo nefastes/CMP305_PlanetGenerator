@@ -314,15 +314,16 @@ void App1::gui()
 		need_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
 		need_generation |= ImGui::DragFloat("Tree Scale", planet_mesh->getTreeScale(), 0.001f);
 		need_generation |= ImGui::DragInt("N Trees Per Face", (int*)planet_mesh->getNumberTreesPerFace(), 1);
+		need_generation |= ImGui::DragFloat("Tree Max Angle Surface Normal", planet_mesh->getTreeNormalMaxAngle(), .01f, 0.f, 90.f);
 		ImGui::DragFloat3("Roll Pitch Yaw", &gui_planet_rotation.x, .01f);
 
 		ImGui::Separator();
 		ImGui::Text("Shader Settings:");
 		if (ImGui::Button("Reset Shader")) gui_planet_shader_material_thresholds = XMFLOAT4(.75f, .5f, .1f, .01f);
-		ImGui::DragFloat("Beach", &gui_planet_shader_material_thresholds.w, .001f);
-		ImGui::DragFloat("Grass", &gui_planet_shader_material_thresholds.z, .001f);
-		ImGui::DragFloat("Rock", &gui_planet_shader_material_thresholds.y, .001f);
-		ImGui::DragFloat("Snow", &gui_planet_shader_material_thresholds.x, .001f);
+		need_generation |= ImGui::DragFloat("Beach", &gui_planet_shader_material_thresholds.w, .001f);
+		need_generation |= ImGui::DragFloat("Grass", &gui_planet_shader_material_thresholds.z, .001f);
+		need_generation |= ImGui::DragFloat("Rock", &gui_planet_shader_material_thresholds.y, .001f);
+		need_generation |= ImGui::DragFloat("Snow", &gui_planet_shader_material_thresholds.x, .001f);
 		
 		ImGui::Separator();
 		ImGui::Text("Layer Settings:");
