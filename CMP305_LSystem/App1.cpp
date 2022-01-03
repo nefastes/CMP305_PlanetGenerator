@@ -267,9 +267,13 @@ void App1::gui()
 		ImGui::SameLine();
 		if (ImGui::Button("Import", ImVec2(120, 20)))
 		{
-			gui_planet_noise_n_layers = planet_mesh->ImportSettings(renderer->getDevice(), settings_filename, 64);
-			planet_mesh->GenerateVertices();
-			ImGui::OpenPopup("Generation Vertices");
+			if (planet_mesh->does_file_exist(settings_filename, 64))
+			{
+				gui_planet_noise_n_layers = planet_mesh->ImportSettings(renderer->getDevice(), settings_filename, 64);
+				planet_mesh->GenerateVertices();
+				ImGui::OpenPopup("Generation Vertices");
+			}
+			else MessageBox(NULL, L"Settings filename does not exist", L"ERROR", MB_OK);
 		}
 
 		ImGui::Separator();
@@ -293,6 +297,7 @@ void App1::gui()
 		need_trees_generation |= ImGui::DragFloat("Tree Scale", planet_mesh->getTreeScale(), 0.001f);
 		need_trees_generation |= ImGui::DragInt("N Trees Per Face", (int*)planet_mesh->getNumberTreesPerFace(), 1);
 		need_trees_generation |= ImGui::DragFloat("Tree Max Angle Surface Normal", planet_mesh->getTreeNormalMaxAngle(), .01f, 0.f, 90.f);
+		need_trees_generation |= ImGui::SliderInt("N Iterations System", (int*)planet_mesh->getTreeSystemIterations(), 1, 20);
 		ImGui::DragFloat3("Roll Pitch Yaw", &gui_planet_rotation.x, .01f);
 
 		ImGui::Separator();

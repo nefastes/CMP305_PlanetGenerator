@@ -43,6 +43,7 @@ public:
 	float* getTreeScale() { return &planet_tree_scale_; }
 	unsigned* getNumberTreesPerFace() { return &n_trees_per_face_; }
 	float* getTreeNormalMaxAngle() { return &tree_max_angle_to_normal_; }
+	unsigned* getTreeSystemIterations() { return &tree_system_n_iterations_; }
 
 private:
 	void initBuffers(ID3D11Device* device);
@@ -69,5 +70,6 @@ private:
 	//Define a maximum amount of trees per face
 	unsigned n_trees_per_face_;
 	float tree_max_angle_to_normal_;
+	unsigned tree_system_n_iterations_;
 };
 

@@ -1,6 +1,6 @@
 #include "GenerateTreeTask.h"
 
-GenerateTreeTask::GenerateTreeTask(ID3D11Device* device, ID3D11DeviceContext* deviceContext, HWND hwnd,
+GenerateTreeTask::GenerateTreeTask(ID3D11Device* device, ID3D11DeviceContext* deviceContext, HWND hwnd, const unsigned& tree_system_iterations,
 	const float& grass_low_threshold, const float& grass_high_threshold, const float& tree_scale, const float& tree_max_angle,
 	const XMFLOAT3& pos_v1, const XMFLOAT3& pos_v2, const XMFLOAT3& pos_v3,
 	const XMFLOAT3& norm_v1, const XMFLOAT3& norm_v2, const XMFLOAT3& norm_v3,
@@ -9,6 +9,7 @@ GenerateTreeTask::GenerateTreeTask(ID3D11Device* device, ID3D11DeviceContext* de
 	device_ = device;
 	deviceContext_ = deviceContext;
 	window_ = hwnd;
+	tree_system_iterations_ = tree_system_iterations;
 	grass_low_threshold_ = grass_low_threshold;
 	grass_high_threshold_ = grass_high_threshold;
 	tree_scale_ = tree_scale;
@@ -50,5 +51,5 @@ void GenerateTreeTask::run()
 	//Translate the tree to the vertex's position
 	transform = XMMatrixMultiply(transform, XMMatrixTranslation(XMVectorGetX(position), XMVectorGetY(position), XMVectorGetZ(position)));
 	const std::lock_guard<std::mutex> lock(tree_mutex_);
-	trees_->push_back(new Tree(device_, deviceContext_, window_, transform));
+	trees_->push_back(new Tree(device_, deviceContext_, window_, transform, tree_system_iterations_));
 }

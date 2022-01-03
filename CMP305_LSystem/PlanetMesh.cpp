@@ -2,7 +2,7 @@
 
 PlanetMesh::PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, HWND hwnd, unsigned resolution) :
 	resolution_(resolution), radius_(1.f), debug_building_(false), planet_tree_scale_(.075f), n_trees_per_face_(20u),
-	tree_max_angle_to_normal_(10.f), current_task(0u)
+	tree_max_angle_to_normal_(10.f), current_task(0u), tree_system_n_iterations_(5u)
 {
 	noise_layers_.push_back(std::make_unique<NoiseLayerSettings>());
 	GenerateVertices();
@@ -835,7 +835,7 @@ void PlanetMesh::GenerateTrees(ID3D11Device* device, ID3D11DeviceContext* device
 			int index = rand() % n_triangles_per_face + n_triangles_per_face * 3 * face_number;
 
 			farm.add_task(new GenerateTreeTask(
-				device, device_context, hwnd,
+				device, device_context, hwnd, tree_system_n_iterations_,
 				grass_low_threshold, grass_high_threshold, planet_tree_scale_, tree_max_angle_to_normal_,
 				vertices[index].position, vertices[index + 1].position, vertices[index + 2].position,
 				vertices[index].normal, vertices[index + 1].normal, vertices[index + 2].normal,

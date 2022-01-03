@@ -9,7 +9,7 @@
 class Tree
 {
 public:
-	Tree(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd, XMMATRIX& transform = XMMatrixIdentity());
+	Tree(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd, XMMATRIX& transform = XMMatrixIdentity(), const unsigned& n_iterations = 5u);
 	~Tree();
 
 	void render(ID3D11DeviceContext* device_context, XMMATRIX& world, XMMATRIX& view, XMMATRIX& proj, Light* light);
