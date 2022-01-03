@@ -2,15 +2,27 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>M:\CMP305\LAB5\x64\Debug\CMP305_LSystem.exe</FullPath>
+      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Debug\CMP305_LSystem.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-      <FullPath>M:\CMP305\LAB5\CMP305_LSystem\light_ps.cso</FullPath>
+      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\planet_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>M:\CMP305\LAB5\CMP305_LSystem\light_vs.cso</FullPath>
+      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\planet_vs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\light_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\light_vs.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\tree_ps.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\tree_vs.cso</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

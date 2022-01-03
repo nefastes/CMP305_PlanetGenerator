@@ -182,15 +182,26 @@ bool App1::render()
 	planet_shader->render(renderer->getDeviceContext(), planet_mesh->getIndexCount());
 
 	//Render the trees of the planet
-	const std::vector<std::unique_ptr<Tree>>* trees = planet_mesh->getTrees();
+	std::vector<Tree*>* trees = planet_mesh->getTrees();
 	for (unsigned i = 0u; i < trees->size() && planet_mesh->isGenerating() != 3u; ++i)
-		trees->at(i)->render(
+	{
+		Tree* current = trees->at(i);
+		if (current == NULL || current == (Tree*)0xcdcdcdcdcdcdcdcd || current == (Tree*)0xdddddddddddddddd)
+		{
+			//Very aweful fix for the memory corruption!! DO NOT REUSE!!
+			//This may prevent the program from crashing, but it doesn't deallocate the corrupted objects from memory!
+			//Need to research more into this, however this is sadly not the focus of this work.
+			trees->at(i) = NULL;
+			continue;
+		}
+		current->render(
 			renderer->getDeviceContext(),
 			worldMatrix,
 			viewMatrix,
 			projectionMatrix,
 			light.get()
 		);
+	}
 
 	// Render GUI
 	gui();
@@ -213,40 +224,6 @@ void App1::gui()
 	ImGui::Text("Camera Pos: (%.2f, %.2f, %.2f)", camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
 
-	if (ImGui::CollapsingHeader("FABRIK"))
-	{
-		ImGui::Text("Goal:");
-		if (ImGui::Checkbox("Render Cylinders", &fabrik_render_cylinders))
-		{
-			if (fabrik_render_cylinders)
-			{
-				fabrik_mesh->BuildCylinders(renderer->getDevice(), renderer->getDeviceContext());
-				for (unsigned i = 0u; i < grass_sprouts.size(); ++i)
-					grass_sprouts[i]->BuildCylinders(renderer->getDevice(), renderer->getDeviceContext());
-			}
-			else
-			{
-				fabrik_mesh->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
-				for (unsigned i = 0u; i < grass_sprouts.size(); ++i)
-					grass_sprouts[i]->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
-			}
-		}
-		ImGui::Checkbox("Animate with Noise", &fabrik_animate_with_noise);
-		ImGui::Text("Debug Noise Value: %.2f", gui_debug_noise);
-		if (!fabrik_animate_with_noise)
-			if (ImGui::SliderFloat3("Position", &fabrik_goal_position.x, -10.f, 10.f))
-				fabrik_mesh->setGoal(fabrik_goal_position);
-		ImGui::SliderFloat2("Wind Direction", &gui_wind_direction.x, 1.f, -1.f);
-		ImGui::SliderFloat("Wind Strength", &gui_wind_strength, 0.f, 1.f);
-
-		ImGui::Separator();
-
-		ImGui::Text("Segments Control:");
-		if (ImGui::SliderInt("N Segments", &fabrik_n_segments, 1, 10))
-			fabrik_mesh->setSegmentCount(fabrik_n_segments);
-		if (ImGui::SliderFloat("Total Length", &fabrik_total_length, .1f, 5.f))
-			fabrik_mesh->setLength(fabrik_total_length);
-	}
 	if (ImGui::CollapsingHeader("Planet Settings"))
 	{
 		bool need_vertices_and_normals_generation = false;
@@ -308,7 +285,7 @@ void App1::gui()
 				ImGui::OpenPopup("Generation Trees");
 			}
 		}
-		need_vertices_and_normals_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
+		need_vertices_and_normals_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 500);
 		need_trees_generation |= ImGui::DragFloat("Tree Scale", planet_mesh->getTreeScale(), 0.001f);
 		need_trees_generation |= ImGui::DragInt("N Trees Per Face", (int*)planet_mesh->getNumberTreesPerFace(), 1);
 		need_trees_generation |= ImGui::DragFloat("Tree Max Angle Surface Normal", planet_mesh->getTreeNormalMaxAngle(), .01f, 0.f, 90.f);
@@ -424,7 +401,7 @@ void App1::gui()
 	}
 	if (ImGui::CollapsingHeader("LSystems"))
 	{
-		const std::vector<std::unique_ptr<Tree>>* trees = planet_mesh->getTrees();
+		std::vector<Tree*>* trees = planet_mesh->getTrees();
 
 		if (trees->empty()) ImGui::Text("Currently no trees have been generated");
 		else
@@ -436,6 +413,40 @@ void App1::gui()
 			ImGui::Text("System of the first generated tree:");
 			ImGui::TextWrapped(trees->at(0)->getCurrentSystem().c_str());	//Only get the first tree as a debug output
 		}
+	}
+	if (ImGui::CollapsingHeader("FABRIK"))
+	{
+		ImGui::Text("Goal:");
+		if (ImGui::Checkbox("Render Cylinders", &fabrik_render_cylinders))
+		{
+			if (fabrik_render_cylinders)
+			{
+				fabrik_mesh->BuildCylinders(renderer->getDevice(), renderer->getDeviceContext());
+				for (unsigned i = 0u; i < grass_sprouts.size(); ++i)
+					grass_sprouts[i]->BuildCylinders(renderer->getDevice(), renderer->getDeviceContext());
+			}
+			else
+			{
+				fabrik_mesh->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
+				for (unsigned i = 0u; i < grass_sprouts.size(); ++i)
+					grass_sprouts[i]->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
+			}
+		}
+		ImGui::Checkbox("Animate with Noise", &fabrik_animate_with_noise);
+		ImGui::Text("Debug Noise Value: %.2f", gui_debug_noise);
+		if (!fabrik_animate_with_noise)
+			if (ImGui::SliderFloat3("Position", &fabrik_goal_position.x, -10.f, 10.f))
+				fabrik_mesh->setGoal(fabrik_goal_position);
+		ImGui::SliderFloat2("Wind Direction", &gui_wind_direction.x, 1.f, -1.f);
+		ImGui::SliderFloat("Wind Strength", &gui_wind_strength, 0.f, 1.f);
+
+		ImGui::Separator();
+
+		ImGui::Text("Segments Control:");
+		if (ImGui::SliderInt("N Segments", &fabrik_n_segments, 1, 10))
+			fabrik_mesh->setSegmentCount(fabrik_n_segments);
+		if (ImGui::SliderFloat("Total Length", &fabrik_total_length, .1f, 5.f))
+			fabrik_mesh->setLength(fabrik_total_length);
 	}
 
 	// Render UI

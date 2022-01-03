@@ -26,6 +26,9 @@ PlanetMesh::~PlanetMesh()
 		delete[] indices;
 		indices = 0;
 	}
+	//Clean planet trees
+	for (size_t i = 0; i < planet_trees_.size(); ++i) delete planet_trees_[i], planet_trees_[i] = nullptr;
+	planet_trees_.clear();
 }
 
 bool PlanetMesh::does_file_exist(const char* filename, const int namesize)
@@ -819,6 +822,7 @@ void PlanetMesh::GenerateTrees(ID3D11Device* device, ID3D11DeviceContext* device
 	farm.clean();
 
 	//Clean any trees that have been previously generated
+	for (size_t i = 0; i < planet_trees_.size(); ++i) delete planet_trees_[i], planet_trees_[i] = nullptr;
 	planet_trees_.clear();
 
 	//Retrieve the number of vertices per face

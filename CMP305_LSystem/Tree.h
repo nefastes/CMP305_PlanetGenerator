@@ -4,6 +4,7 @@
 #include "Leaf.h"
 #include "CylinderMesh.h"
 #include "TreeShader.h"
+#include <mutex>
 
 class Tree
 {
@@ -22,10 +23,12 @@ public:
 
 private:
 	void add_system_rules();
-	std::vector<std::unique_ptr<CylinderMesh>> tree_branches_;
-	std::vector<std::unique_ptr<Leaf>> tree_leaves_;
+	std::vector<CylinderMesh*> tree_branches_;
+	std::vector<Leaf*> tree_leaves_;
 	XMMATRIX tree_transform_;
 	LSystem lSystem_;
 	TreeShader tree_shader_;
+
+	std::mutex tree_mutex_;
 };
 

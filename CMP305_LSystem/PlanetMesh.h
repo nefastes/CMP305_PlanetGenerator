@@ -33,7 +33,7 @@ public:
 	//float* getRadius() { return &radius_; }
 	bool* getDebug() { return &debug_building_; }
 	std::vector<std::unique_ptr<NoiseLayerSettings>>* getNoiseLayers() { return &noise_layers_; }
-	const std::vector<std::unique_ptr<Tree>>* getTrees() { return &planet_trees_; }
+	std::vector<Tree*>* getTrees() { return &planet_trees_; }
 	float* getTreeScale() { return &planet_tree_scale_; }
 	unsigned* getNumberTreesPerFace() { return &n_trees_per_face_; }
 	float* getTreeNormalMaxAngle() { return &tree_max_angle_to_normal_; }
@@ -58,7 +58,7 @@ private:
 	unsigned long* indices;
 
 	//Planet trees
-	std::vector<std::unique_ptr<Tree>> planet_trees_;
+	std::vector<Tree*> planet_trees_;
 	float planet_tree_scale_;
 	//Define a maximum amount of trees per face
 	unsigned n_trees_per_face_;

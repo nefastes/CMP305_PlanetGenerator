@@ -12,6 +12,8 @@ tree_shader_(device, hwnd), tree_transform_(transform)
 Tree::~Tree()
 {
 	//Clean memory
+	for (size_t i = 0; i < tree_branches_.size(); ++i) delete tree_branches_[i], tree_branches_[i] = nullptr;
+	for (size_t i = 0; i < tree_leaves_.size(); ++i) delete tree_leaves_[i], tree_leaves_[i] = nullptr;
 	tree_branches_.clear();
 	tree_leaves_.clear();
 }
@@ -76,9 +78,10 @@ void Tree::build(ID3D11Device* device, ID3D11DeviceContext* device_context)
 		switch (systemString[i]) {
 		case 'F':
 			{
+			const std::lock_guard<std::mutex> lock(tree_mutex_);
 			//Draw a line segment and move forward
 			XMVECTOR step = XMVector3Transform(dir, currentRotation);
-			tree_branches_.push_back(std::make_unique<CylinderMesh>(
+			tree_branches_.push_back(new CylinderMesh(
 				device,
 				device_context,
 				1,
@@ -94,8 +97,11 @@ void Tree::build(ID3D11Device* device, ID3D11DeviceContext* device_context)
 			break;
 		case 'A':
 			//Add a leaf
-			tree_leaves_.push_back(std::make_unique<Leaf>(device, device_context, 2));
+			{
+			const std::lock_guard<std::mutex> lock(tree_mutex_);
+			tree_leaves_.push_back(new Leaf(device, device_context, 2));
 			tree_leaves_.back()->m_Transform = XMMatrixScaling(.25f, .25f, .25f) * XMMatrixTranslationFromVector(pos);
+			}
 			break;
 		case '[':
 			pos_stack.push_back(pos);

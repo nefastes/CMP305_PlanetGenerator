@@ -10,5 +10,3 @@ D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_LSystem\lib\Debug\DXFramewor
 D:\Work\Abertay\CMP305\05_Growth\CMP305_Base\CMP305_LSystem\DXFramework\x64\Debug\DXFramework.pdb
 D:\Work\Abertay\CMP305\05_Growth\Lab Final\CMP305_LSystem\CMP305_LSystem\lib\Debug\DXFramework.pdb
 D:\Work\Abertay\CMP305\05_Growth\Lab Final\CMP305_LSystem\CMP305_LSystem\DXFramework\x64\Debug\DXFramework.pdb
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\lib\Debug\DXFramework.pdb
-C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\DXFramework\x64\Debug\DXFramework.pdb
