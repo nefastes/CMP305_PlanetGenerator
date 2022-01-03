@@ -58,6 +58,9 @@ void Tree::add_system_rules()
 
 void Tree::build(ID3D11Device* device, ID3D11DeviceContext* device_context)
 {
+	//Clean memory in case of a rebuild
+	for (size_t i = 0; i < tree_branches_.size(); ++i) delete tree_branches_[i], tree_branches_[i] = nullptr;
+	for (size_t i = 0; i < tree_leaves_.size(); ++i) delete tree_leaves_[i], tree_leaves_[i] = nullptr;
 	tree_branches_.clear();
 	tree_leaves_.clear();
 

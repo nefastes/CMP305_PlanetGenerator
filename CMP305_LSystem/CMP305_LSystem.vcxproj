@@ -178,6 +178,7 @@
     <ClCompile Include="LSystem.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PlanetShader.cpp" />
+    <ClCompile Include="RegenerateTreeSystemTask.cpp" />
     <ClCompile Include="Tree.cpp" />
     <ClCompile Include="TreeShader.cpp" />
   </ItemGroup>
@@ -197,6 +198,7 @@
     <ClInclude Include="LineMesh.h" />
     <ClInclude Include="LSystem.h" />
     <ClInclude Include="PlanetShader.h" />
+    <ClInclude Include="RegenerateTreeSystemTask.h" />
     <ClInclude Include="task.h" />
     <ClInclude Include="Tree.h" />
     <ClInclude Include="TreeShader.h" />

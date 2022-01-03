@@ -37,6 +37,7 @@ private:
 
 
 	//Fabrik
+	bool fabrik_render_;
 	std::unique_ptr<SphereMesh> fabrik_goal_mesh;
 	XMFLOAT3 fabrik_goal_position;
 	bool fabrik_animate_with_noise;

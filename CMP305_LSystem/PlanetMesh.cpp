@@ -889,6 +889,19 @@ void PlanetMesh::GenerateMesh(ID3D11Device* device)
 	device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer);
 }
 
+void PlanetMesh::RegenerateSystemTrees(ID3D11Device* device, ID3D11DeviceContext* device_context)
+{
+	//Check that no farming is occuring
+	farm.clean();
+
+	//Retrieve the number of vertices per face
+	int n_triangles_per_face = vertexCount / 3 / 6;
+	for(size_t i = 0; i < planet_trees_.size(); ++i)
+		if(planet_trees_[i]) farm.add_task(new RegenerateTreeSystemTask(device, device_context, planet_trees_[i]));
+	current_task = 4u;
+	farm.run();
+}
+
 void PlanetMesh::initBuffers(ID3D11Device* device)
 {
 }

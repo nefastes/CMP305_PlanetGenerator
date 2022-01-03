@@ -87,6 +87,9 @@
     <ClCompile Include="GenerateTreeTask.cpp">
       <Filter>Source Files\MultiThreading</Filter>
     </ClCompile>
+    <ClCompile Include="RegenerateTreeSystemTask.cpp">
+      <Filter>Source Files\MultiThreading</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App1.h">
@@ -141,6 +144,9 @@
       <Filter>Header Files\MultiThreading</Filter>
     </ClInclude>
     <ClInclude Include="GenerateTreeTask.h">
+      <Filter>Header Files\MultiThreading</Filter>
+    </ClInclude>
+    <ClInclude Include="RegenerateTreeSystemTask.h">
       <Filter>Header Files\MultiThreading</Filter>
     </ClInclude>
   </ItemGroup>

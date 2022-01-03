@@ -2,6 +2,7 @@
 // Lab 1 example, simple coloured triangle mesh
 #include "App1.h"
 App1::App1() :
+	fabrik_render_(false),
 	fabrik_goal_position(XMFLOAT3(0.f, 1.f, 0.f)),
 	fabrik_n_segments(1),
 	fabrik_total_length(1.f),
@@ -142,38 +143,8 @@ bool App1::render()
 	camera->update();
 
 	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
-	worldMatrix = renderer->getWorldMatrix();
 	viewMatrix = camera->getViewMatrix();
 	projectionMatrix = renderer->getProjectionMatrix();
-
-	/*if (fabrik_mesh->getIndexCount())
-	{
-		if(fabrik_render_cylinders) fabrik_mesh->sendData(renderer->getDeviceContext(), D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		else fabrik_mesh->sendData(renderer->getDeviceContext());
-		light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
-		light_shader->render(renderer->getDeviceContext(), fabrik_mesh->getIndexCount());
-	}
-
-	for (unsigned i = 0u; i < grass_sprouts.size(); ++i)
-	{
-		if (fabrik_render_cylinders) grass_sprouts[i]->sendData(renderer->getDeviceContext(), D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		else grass_sprouts[i]->sendData(renderer->getDeviceContext());
-		light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
-		light_shader->render(renderer->getDeviceContext(), grass_sprouts[i]->getIndexCount());
-	}
-
-	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixScaling(.125f, .125f, .125f));
-	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(-5.f, 0.f, -5.f));
-	m_ground->sendData(renderer->getDeviceContext());
-	light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
-	light_shader->render(renderer->getDeviceContext(), m_ground->getIndexCount());
-	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(5.f, 0.f, 5.f));
-
-	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z));
-	fabrik_goal_mesh->sendData(renderer->getDeviceContext());
-	light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
-	light_shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());*/
-
 
 	//Render the planet
 	worldMatrix = XMMatrixRotationRollPitchYaw(gui_planet_rotation.y, gui_planet_rotation.z, gui_planet_rotation.x);
@@ -186,7 +157,7 @@ bool App1::render()
 	for (unsigned i = 0u; i < trees->size() && planet_mesh->isGenerating() != 3u; ++i)
 	{
 		Tree* current = trees->at(i);
-		if (current == NULL || current == (Tree*)0xcdcdcdcdcdcdcdcd || current == (Tree*)0xdddddddddddddddd)
+		if (current == NULL || current == (Tree*)0xcdcdcdcdcdcdcdcd || current == (Tree*)0xdddddddddddddddd || current == (Tree*)0xddddddddfdfdfdfd)
 		{
 			//Very aweful fix for the memory corruption!! DO NOT REUSE!!
 			//This may prevent the program from crashing, but it doesn't deallocate the corrupted objects from memory!
@@ -201,6 +172,39 @@ bool App1::render()
 			projectionMatrix,
 			light.get()
 		);
+	}
+
+	//Render the showcase of fabrik
+	if (fabrik_render_)
+	{
+		worldMatrix = XMMatrixTranslation(-10.f, 0.f, 0.f);
+		if (fabrik_mesh->getIndexCount())
+		{
+			if (fabrik_render_cylinders) fabrik_mesh->sendData(renderer->getDeviceContext(), D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			else fabrik_mesh->sendData(renderer->getDeviceContext());
+			light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+			light_shader->render(renderer->getDeviceContext(), fabrik_mesh->getIndexCount());
+		}
+
+		for (unsigned i = 0u; i < grass_sprouts.size(); ++i)
+		{
+			if (fabrik_render_cylinders) grass_sprouts[i]->sendData(renderer->getDeviceContext(), D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			else grass_sprouts[i]->sendData(renderer->getDeviceContext());
+			light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+			light_shader->render(renderer->getDeviceContext(), grass_sprouts[i]->getIndexCount());
+		}
+
+		worldMatrix = XMMatrixScaling(.125f, .125f, .125f);
+		worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(-15.f, 0.f, -5.f));
+		m_ground->sendData(renderer->getDeviceContext());
+		light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"grass"), light.get());
+		light_shader->render(renderer->getDeviceContext(), m_ground->getIndexCount());
+		worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(5.f, 0.f, 5.f));
+
+		worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixTranslation(fabrik_goal_position.x, fabrik_goal_position.y, fabrik_goal_position.z));
+		fabrik_goal_mesh->sendData(renderer->getDeviceContext());
+		light_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture(L"wood"), light.get());
+		light_shader->render(renderer->getDeviceContext(), fabrik_goal_mesh->getIndexCount());
 	}
 
 	// Render GUI
@@ -353,7 +357,7 @@ void App1::gui()
 		}
 		if (ImGui::BeginPopupModal("Generation Vertices"))
 		{
-			if (planet_mesh->isGenerating() == 1u)
+			if (planet_mesh->isGenerating() && planet_mesh->getCurrentTask() == 1u)
 			{
 				ImGui::Text("Generating Vertices...");
 				ImGui::ProgressBar(planet_mesh->getGenerationProgress(), ImVec2(400, 20));
@@ -369,7 +373,7 @@ void App1::gui()
 		}
 		if (ImGui::BeginPopupModal("Generation Normals"))
 		{
-			if (planet_mesh->isGenerating() == 2u)
+			if (planet_mesh->isGenerating() && planet_mesh->getCurrentTask() == 2u)
 			{
 				ImGui::Text("Generating Normals...");
 				ImGui::ProgressBar(planet_mesh->getGenerationProgress(), ImVec2(400, 20));
@@ -385,7 +389,7 @@ void App1::gui()
 		}
 		if (ImGui::BeginPopupModal("Generation Trees"))
 		{
-			if (planet_mesh->isGenerating() == 3u)
+			if (planet_mesh->isGenerating() && planet_mesh->getCurrentTask() == 3u)
 			{
 				ImGui::Text("Generating Trees...");
 				ImGui::ProgressBar(planet_mesh->getGenerationProgress(), ImVec2(400, 20));
@@ -406,16 +410,13 @@ void App1::gui()
 		if (trees->empty()) ImGui::Text("Currently no trees have been generated");
 		else
 		{
-			if (ImGui::Button("Run System"))
-				for (unsigned i = 0u; i < trees->size(); ++i)
-					trees->at(i)->runSystem(), trees->at(i)->build(renderer->getDevice(), renderer->getDeviceContext());
-
 			ImGui::Text("System of the first generated tree:");
 			ImGui::TextWrapped(trees->at(0)->getCurrentSystem().c_str());	//Only get the first tree as a debug output
 		}
 	}
 	if (ImGui::CollapsingHeader("FABRIK"))
 	{
+		ImGui::Checkbox("Render Test Fabrik", &fabrik_render_);
 		ImGui::Text("Goal:");
 		if (ImGui::Checkbox("Render Cylinders", &fabrik_render_cylinders))
 		{
@@ -434,19 +435,21 @@ void App1::gui()
 		}
 		ImGui::Checkbox("Animate with Noise", &fabrik_animate_with_noise);
 		ImGui::Text("Debug Noise Value: %.2f", gui_debug_noise);
-		if (!fabrik_animate_with_noise)
-			if (ImGui::SliderFloat3("Position", &fabrik_goal_position.x, -10.f, 10.f))
-				fabrik_mesh->setGoal(fabrik_goal_position);
 		ImGui::SliderFloat2("Wind Direction", &gui_wind_direction.x, 1.f, -1.f);
 		ImGui::SliderFloat("Wind Strength", &gui_wind_strength, 0.f, 1.f);
 
 		ImGui::Separator();
 
+		ImGui::Text("--Test Mesh (In The Middle With The Sphere)--");
 		ImGui::Text("Segments Control:");
 		if (ImGui::SliderInt("N Segments", &fabrik_n_segments, 1, 10))
 			fabrik_mesh->setSegmentCount(fabrik_n_segments);
 		if (ImGui::SliderFloat("Total Length", &fabrik_total_length, .1f, 5.f))
 			fabrik_mesh->setLength(fabrik_total_length);
+		ImGui::Text("Goal Settings:");
+		if (!fabrik_animate_with_noise)
+			if (ImGui::DragFloat3("Position", &fabrik_goal_position.x, .01f))
+				fabrik_mesh->setGoal(fabrik_goal_position);
 	}
 
 	// Render UI
