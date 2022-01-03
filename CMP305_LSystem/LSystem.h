@@ -2,6 +2,7 @@
 #include <string>
 #include <map>
 #include "D3D.h"
+
 class LSystem
 {
 public:

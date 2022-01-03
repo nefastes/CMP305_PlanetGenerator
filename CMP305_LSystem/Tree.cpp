@@ -3,6 +3,7 @@
 Tree::Tree(ID3D11Device* device, ID3D11DeviceContext* device_context, HWND hwnd, XMMATRIX& transform) : lSystem_(std::string("FA")),
 tree_shader_(device, hwnd), tree_transform_(transform)
 {
+	
 	add_system_rules();
 	lSystem_.Run(5u);	//5 iterations
 	build(device, device_context);

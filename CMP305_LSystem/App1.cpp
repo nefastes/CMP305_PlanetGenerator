@@ -213,17 +213,6 @@ void App1::gui()
 	ImGui::Text("Camera Pos: (%.2f, %.2f, %.2f)", camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
 
-	if (ImGui::CollapsingHeader("LSystems"))
-	{
-		const std::vector<std::unique_ptr<Tree>>* trees = planet_mesh->getTrees();
-		if (ImGui::Button("Run System"))
-			for (unsigned i = 0u; i < trees->size(); ++i)
-				trees->at(i)->runSystem(), trees->at(i)->build(renderer->getDevice(), renderer->getDeviceContext());
-
-		ImGui::Text("System:");
-		ImGui::TextWrapped(trees->at(0)->getCurrentSystem().c_str());	//Only get the first tree as a debug output
-	}
-
 	if (ImGui::CollapsingHeader("FABRIK"))
 	{
 		ImGui::Text("Goal:");
@@ -260,7 +249,8 @@ void App1::gui()
 	}
 	if (ImGui::CollapsingHeader("Planet Settings"))
 	{
-		bool need_generation = false;
+		bool need_vertices_and_normals_generation = false;
+		bool need_trees_generation = false;
 
 		ImGui::Text("Current Save File:");
 		ImGui::InputText("File Name", settings_filename, 64);
@@ -303,27 +293,34 @@ void App1::gui()
 
 		ImGui::Separator();
 		ImGui::Text("Mesh Settings:");
-		need_generation |= ImGui::Checkbox("Debug Generation", planet_mesh->getDebug());
+		need_vertices_and_normals_generation |= ImGui::Checkbox("Debug Generation", planet_mesh->getDebug());
 		ImGui::Checkbox("Generate On Modification", &gui_planet_generate_on_input);
 		if (!gui_planet_generate_on_input)
+		{
 			if (ImGui::Button("Generate Mesh"))
 			{
 				planet_mesh->GenerateVertices();
 				ImGui::OpenPopup("Generation Vertices");
 			}
-		need_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
-		need_generation |= ImGui::DragFloat("Tree Scale", planet_mesh->getTreeScale(), 0.001f);
-		need_generation |= ImGui::DragInt("N Trees Per Face", (int*)planet_mesh->getNumberTreesPerFace(), 1);
-		need_generation |= ImGui::DragFloat("Tree Max Angle Surface Normal", planet_mesh->getTreeNormalMaxAngle(), .01f, 0.f, 90.f);
+			if (ImGui::Button("Generate Trees Only"))
+			{
+				planet_mesh->GenerateTrees(renderer->getDevice(), renderer->getDeviceContext(), wnd, gui_planet_shader_material_thresholds.z, gui_planet_shader_material_thresholds.y);
+				ImGui::OpenPopup("Generation Trees");
+			}
+		}
+		need_vertices_and_normals_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 100);
+		need_trees_generation |= ImGui::DragFloat("Tree Scale", planet_mesh->getTreeScale(), 0.001f);
+		need_trees_generation |= ImGui::DragInt("N Trees Per Face", (int*)planet_mesh->getNumberTreesPerFace(), 1);
+		need_trees_generation |= ImGui::DragFloat("Tree Max Angle Surface Normal", planet_mesh->getTreeNormalMaxAngle(), .01f, 0.f, 90.f);
 		ImGui::DragFloat3("Roll Pitch Yaw", &gui_planet_rotation.x, .01f);
 
 		ImGui::Separator();
 		ImGui::Text("Shader Settings:");
 		if (ImGui::Button("Reset Shader")) gui_planet_shader_material_thresholds = XMFLOAT4(.75f, .5f, .1f, .01f);
-		need_generation |= ImGui::DragFloat("Beach", &gui_planet_shader_material_thresholds.w, .001f);
-		need_generation |= ImGui::DragFloat("Grass", &gui_planet_shader_material_thresholds.z, .001f);
-		need_generation |= ImGui::DragFloat("Rock", &gui_planet_shader_material_thresholds.y, .001f);
-		need_generation |= ImGui::DragFloat("Snow", &gui_planet_shader_material_thresholds.x, .001f);
+		need_trees_generation |= ImGui::DragFloat("Beach", &gui_planet_shader_material_thresholds.w, .001f);
+		need_trees_generation |= ImGui::DragFloat("Grass", &gui_planet_shader_material_thresholds.z, .001f);
+		need_trees_generation |= ImGui::DragFloat("Rock", &gui_planet_shader_material_thresholds.y, .001f);
+		need_trees_generation |= ImGui::DragFloat("Snow", &gui_planet_shader_material_thresholds.x, .001f);
 		
 		ImGui::Separator();
 		ImGui::Text("Layer Settings:");
@@ -333,7 +330,7 @@ void App1::gui()
 			int n_elements = noise_layers->size();
 			for (int i = n_elements; i < gui_planet_noise_n_layers; ++i) noise_layers->push_back(std::make_unique<NoiseLayerSettings>());
 			for (int i = n_elements; i > gui_planet_noise_n_layers; --i) noise_layers->pop_back();
-			need_generation |= noise_layers->size() != n_elements;
+			need_vertices_and_normals_generation |= noise_layers->size() != n_elements;
 		}
 		for (unsigned i = 0u; i < noise_layers->size(); ++i)
 		{
@@ -342,35 +339,40 @@ void App1::gui()
 				ImGui::PushID(i);
 				NoiseLayerSettings* current_layer = noise_layers->at(i).get();
 
-				need_generation |= ImGui::Checkbox("Layer Active", &current_layer->layer_active_);
-				need_generation |= ImGui::Checkbox("Use Previous Layer As Mask", &current_layer->layer_use_previous_layer_as_mask_);
+				need_vertices_and_normals_generation |= ImGui::Checkbox("Layer Active", &current_layer->layer_active_);
+				need_vertices_and_normals_generation |= ImGui::Checkbox("Use Previous Layer As Mask", &current_layer->layer_use_previous_layer_as_mask_);
 				ImGui::Text("Noise Settings:");
 				NoiseType* current_type = &current_layer->noise_type_;
-				need_generation |= ImGui::Combo("Noise Type", (int*)current_type, "FBM\0Rigid\0\0");
-				need_generation |= ImGui::DragFloat("Noise frequency", &current_layer->noise_base_frequency_, 0.001f);
-				need_generation |= ImGui::DragFloat("Noise Base amplitude", &current_layer->noise_base_amplitude_, 0.001f);
-				need_generation |= ImGui::DragFloat("Noise Final amplitude", &current_layer->noise_final_amplitude_, 0.001f);
-				need_generation |= ImGui::DragFloat3("Noise center", &current_layer->layer_center_.x, .001f);
-				need_generation |= ImGui::SliderFloat("Min threshold", &current_layer->noise_min_threshold_, 0.f, 10.f);
+				need_vertices_and_normals_generation |= ImGui::Combo("Noise Type", (int*)current_type, "FBM\0Rigid\0\0");
+				need_vertices_and_normals_generation |= ImGui::DragFloat("Noise frequency", &current_layer->noise_base_frequency_, 0.001f);
+				need_vertices_and_normals_generation |= ImGui::DragFloat("Noise Base amplitude", &current_layer->noise_base_amplitude_, 0.001f);
+				need_vertices_and_normals_generation |= ImGui::DragFloat("Noise Final amplitude", &current_layer->noise_final_amplitude_, 0.001f);
+				need_vertices_and_normals_generation |= ImGui::DragFloat3("Noise center", &current_layer->layer_center_.x, .001f);
+				need_vertices_and_normals_generation |= ImGui::SliderFloat("Min threshold", &current_layer->noise_min_threshold_, 0.f, 10.f);
 				if (*current_type == NoiseType::RIGID)
 				{
-					need_generation |= ImGui::DragFloat("Sharpness", &current_layer->rigid_noise_sharpness_, 0.01f);
-					need_generation |= ImGui::DragFloat("LOD Multiplier", &current_layer->rigid_noise_LOD_multiplier_, 0.01f);
+					need_vertices_and_normals_generation |= ImGui::DragFloat("Sharpness", &current_layer->rigid_noise_sharpness_, 0.01f);
+					need_vertices_and_normals_generation |= ImGui::DragFloat("LOD Multiplier", &current_layer->rigid_noise_LOD_multiplier_, 0.01f);
 				}
 				ImGui::Text("Sub Layers Settings:");
-				need_generation |= ImGui::SliderInt("N layers", (int*)&current_layer->layer_nSubLayers_, 1, 20);
-				need_generation |= ImGui::SliderFloat("Layer roughness", &current_layer->layer_roughness_, 0.f, 10.f);
-				need_generation |= ImGui::SliderFloat("Layer persistence", &current_layer->layer_persistence_, 0.f, 1.f);
+				need_vertices_and_normals_generation |= ImGui::SliderInt("N layers", (int*)&current_layer->layer_nSubLayers_, 1, 20);
+				need_vertices_and_normals_generation |= ImGui::SliderFloat("Layer roughness", &current_layer->layer_roughness_, 0.f, 10.f);
+				need_vertices_and_normals_generation |= ImGui::SliderFloat("Layer persistence", &current_layer->layer_persistence_, 0.f, 1.f);
 
 				ImGui::Separator();
 				ImGui::PopID();
 				ImGui::TreePop();
 			}
 		}
-		if (need_generation && gui_planet_generate_on_input)
+		if (need_vertices_and_normals_generation && gui_planet_generate_on_input)
 		{
 			planet_mesh->GenerateVertices();
 			ImGui::OpenPopup("Generation Vertices");
+		}
+		if (need_trees_generation && gui_planet_generate_on_input)
+		{
+			planet_mesh->GenerateTrees(renderer->getDevice(), renderer->getDeviceContext(), wnd, gui_planet_shader_material_thresholds.z, gui_planet_shader_material_thresholds.y);
+			ImGui::OpenPopup("Generation Trees");
 		}
 		if (ImGui::BeginPopupModal("Generation Vertices"))
 		{
@@ -418,6 +420,21 @@ void App1::gui()
 				ImGui::CloseCurrentPopup();
 				ImGui::EndPopup();
 			}
+		}
+	}
+	if (ImGui::CollapsingHeader("LSystems"))
+	{
+		const std::vector<std::unique_ptr<Tree>>* trees = planet_mesh->getTrees();
+
+		if (trees->empty()) ImGui::Text("Currently no trees have been generated");
+		else
+		{
+			if (ImGui::Button("Run System"))
+				for (unsigned i = 0u; i < trees->size(); ++i)
+					trees->at(i)->runSystem(), trees->at(i)->build(renderer->getDevice(), renderer->getDeviceContext());
+
+			ImGui::Text("System of the first generated tree:");
+			ImGui::TextWrapped(trees->at(0)->getCurrentSystem().c_str());	//Only get the first tree as a debug output
 		}
 	}
 

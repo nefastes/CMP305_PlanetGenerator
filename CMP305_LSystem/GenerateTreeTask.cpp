@@ -49,8 +49,6 @@ void GenerateTreeTask::run()
 	transform = XMMatrixMultiply(transform, XMMatrixRotationAxis(rotation_axis, rotation_angle));
 	//Translate the tree to the vertex's position
 	transform = XMMatrixMultiply(transform, XMMatrixTranslation(XMVectorGetX(position), XMVectorGetY(position), XMVectorGetZ(position)));
-	//tree_to_modify_->setTransform(transform);
-	//tree_to_modify_->runSystem();
-	//tree_to_modify_->build(device_, deviceContext_);
+	const std::lock_guard<std::mutex> lock(tree_mutex_);
 	trees_->push_back(std::make_unique<Tree>(device_, deviceContext_, window_, transform));
 }

@@ -2,6 +2,7 @@
 #include "task.h"
 #include "DXF.h"
 #include "Tree.h"
+#include <mutex>
 
 class GenerateTreeTask : public Task
 {
@@ -22,5 +23,7 @@ private:
 	float grass_low_threshold_, grass_high_threshold_, tree_scale_, tree_max_angle_;
 	XMFLOAT3 pos_v1_, pos_v2_, pos_v3_, norm_v1_, norm_v2_, norm_v3_;
 	std::vector<std::unique_ptr<Tree>>* trees_;
+
+	std::mutex tree_mutex_;
 };
 

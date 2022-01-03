@@ -20,6 +20,12 @@ PlanetMesh::~PlanetMesh()
 		delete[] vertices;
 		vertices = 0;
 	}
+	//Release the index array
+	if (indices != 0)
+	{
+		delete[] indices;
+		indices = 0;
+	}
 }
 
 bool PlanetMesh::does_file_exist(const char* filename, const int namesize)
@@ -98,6 +104,12 @@ void PlanetMesh::GenerateVertices()
 	{
 		delete[] vertices;
 		vertices = 0;
+	}
+	//Release the index array
+	if (indices != 0)
+	{
+		delete[] indices;
+		indices = 0;
 	}
 	vertices = new VertexType[vertexCount];
 	indices = new unsigned long[indexCount];
@@ -871,11 +883,6 @@ void PlanetMesh::GenerateMesh(ID3D11Device* device)
 	indexData.SysMemSlicePitch = 0;
 	// Create the index buffer.
 	device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer);
-
-	//Do not release the vertex array as we may want to regenerate the normals or the trees only
-	//Release the index array
-	delete[] indices;
-	indices = 0;
 }
 
 void PlanetMesh::initBuffers(ID3D11Device* device)

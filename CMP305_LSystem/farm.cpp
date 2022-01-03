@@ -49,6 +49,7 @@ void Farm::run()
 
 void Farm::clean()
 {
+	if (threads_.empty()) return;
 	for (unsigned i = 0; i < nCPUs_; ++i) threads_[i]->join(), delete threads_[i];
 	threads_.clear();
 }
