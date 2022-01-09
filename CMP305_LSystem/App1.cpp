@@ -295,7 +295,7 @@ void App1::gui()
 		}
 		need_vertices_and_normals_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 500);
 		need_trees_generation |= ImGui::DragFloat("Tree Scale", planet_mesh->getTreeScale(), 0.001f);
-		need_trees_generation |= ImGui::DragInt("N Trees Per Face", (int*)planet_mesh->getNumberTreesPerFace(), 1);
+		need_trees_generation |= ImGui::DragInt("N Trees Per Face", (int*)planet_mesh->getNumberTreesPerFace(), 1, 0, 5000);
 		need_trees_generation |= ImGui::DragFloat("Tree Max Angle Surface Normal", planet_mesh->getTreeNormalMaxAngle(), .01f, 0.f, 90.f);
 		need_trees_generation |= ImGui::SliderInt("N Iterations System", (int*)planet_mesh->getTreeSystemIterations(), 1, 20);
 		ImGui::DragFloat3("Roll Pitch Yaw", &gui_planet_rotation.x, .01f);
@@ -360,7 +360,7 @@ void App1::gui()
 			planet_mesh->GenerateTrees(renderer->getDevice(), renderer->getDeviceContext(), wnd, gui_planet_shader_material_thresholds.z, gui_planet_shader_material_thresholds.y);
 			ImGui::OpenPopup("Generation Trees");
 		}
-		if (ImGui::BeginPopupModal("Generation Vertices"))
+		if (ImGui::BeginPopupModal("Generation Vertices", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			if (planet_mesh->isGenerating() && planet_mesh->getCurrentTask() == 1u)
 			{
@@ -376,7 +376,7 @@ void App1::gui()
 				ImGui::OpenPopup("Generation Normals");
 			}
 		}
-		if (ImGui::BeginPopupModal("Generation Normals"))
+		if (ImGui::BeginPopupModal("Generation Normals", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			if (planet_mesh->isGenerating() && planet_mesh->getCurrentTask() == 2u)
 			{
@@ -392,7 +392,7 @@ void App1::gui()
 				ImGui::OpenPopup("Generation Trees");
 			}
 		}
-		if (ImGui::BeginPopupModal("Generation Trees"))
+		if (ImGui::BeginPopupModal("Generation Trees", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			if (planet_mesh->isGenerating() && planet_mesh->getCurrentTask() == 3u)
 			{
