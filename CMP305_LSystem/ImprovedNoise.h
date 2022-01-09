@@ -34,7 +34,7 @@ struct NoiseLayerSettings {
 
     //Rigid noise specific settings
     float rigid_noise_sharpness_;			//Defines how sharp the curve becomes, used as a power when calculating the noise
-    float rigid_noise_LOD_multiplier_;	//Defines how detailed the noise becomes, more details near peaks and low detail on plains
+    float rigid_noise_LOD_multiplier_;	    //Defines how detailed the noise becomes, more details near peaks and low detail on plains
 };
 
 class ImprovedNoise {
@@ -65,20 +65,20 @@ public:
         x -= floor(x);                                // FIND RELATIVE X,Y,Z
         y -= floor(y);                                // OF POINT IN CUBE.
         z -= floor(z);
-        double u = fade(x),                                // COMPUTE FADE CURVES
-            v = fade(y),                                // FOR EACH OF X,Y,Z.
-            w = fade(z);
-        int a = p[X] + Y, AA = p[a] + Z, AB = p[a + 1] + Z,      // HASH COORDINATES OF
-            b = p[X + 1] + Y, BA = p[b] + Z, BB = p[b + 1] + Z;      // THE 8 CUBE CORNERS,
+        double  u = fade(x),                                // COMPUTE FADE CURVES
+                v = fade(y),                                // FOR EACH OF X,Y,Z.
+                w = fade(z);
+        int a = p[X] + Y, AA = p[a] + Z, AB = p[a + 1] + Z,         // HASH COORDINATES OF
+            b = p[X + 1] + Y, BA = p[b] + Z, BB = p[b + 1] + Z;     // THE 8 CUBE CORNERS,
 
-        return lerp(w, lerp(v, lerp(u, grad(p[AA], x, y, z),  // AND ADD
-            grad(p[BA], x - 1, y, z)), // BLENDED
-            lerp(u, grad(p[AB], x, y - 1, z),  // RESULTS
-                grad(p[BB], x - 1, y - 1, z))),// FROM  8
-            lerp(v, lerp(u, grad(p[AA + 1], x, y, z - 1),  // CORNERS
-                grad(p[BA + 1], x - 1, y, z - 1)), // OF CUBE
-                lerp(u, grad(p[AB + 1], x, y - 1, z - 1),
-                    grad(p[BB + 1], x - 1, y - 1, z - 1))));
+        return lerp(w,  lerp(v, lerp(u, grad(p[AA], x, y, z),                           // AND ADD
+                                        grad(p[BA], x - 1, y, z)),                      // BLENDED
+                                lerp(u, grad(p[AB], x, y - 1, z),                       // RESULTS
+                                        grad(p[BB], x - 1, y - 1, z))),                 // FROM  8
+                        lerp(v, lerp(u, grad(p[AA + 1], x, y, z - 1),                   // CORNERS
+                                        grad(p[BA + 1], x - 1, y, z - 1)),              // OF CUBE
+                                lerp(u, grad(p[AB + 1], x, y - 1, z - 1),
+                                        grad(p[BB + 1], x - 1, y - 1, z - 1))));
     }
 
     //2D noise
@@ -106,14 +106,14 @@ public:
         x -= floor(x);                                // FIND RELATIVE X,Y
         y -= floor(y);                                // OF POINT IN SQUARE.
         double  u = fade(x),                          // COMPUTE FADE CURVES
-            v = fade(y);                          // FOR EACH OF X,Y,Z.
+                v = fade(y);                          // FOR EACH OF X,Y,Z.
         int A = p[X] + Y, AA = p[A], AB = p[A + 1],             // HASH COORDINATES OF
             b = p[X + 1] + Y, BA = p[b], BB = p[b + 1];         // THE 4 CUBE CORNERS,
 
-        return lerp(v, lerp(u, grad(p[AA], x, y),           // AND ADD
-            grad(p[BA], x - 1, y)),      // BLENDED
-            lerp(u, grad(p[AB], x, y - 1),       // RESULTS
-                grad(p[BB], x - 1, y - 1)));
+        return lerp(v, lerp(u,  grad(p[AA], x, y),           // AND ADD
+                                grad(p[BA], x - 1, y)),      // BLENDED
+                       lerp(u,  grad(p[AB], x, y - 1),       // RESULTS
+                                grad(p[BB], x - 1, y - 1)));
     }
 
     static double fade(double t) { return t * t * t * (t * (t * 6 - 15) + 10); }

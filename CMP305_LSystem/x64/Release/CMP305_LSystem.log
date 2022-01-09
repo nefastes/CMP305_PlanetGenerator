@@ -1,11 +1,30 @@
-﻿  PlanetMesh.cpp
-C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.cpp(54,43): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
-C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.cpp(81,3): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
-C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.cpp(82,3): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+﻿  App1.cpp
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(38,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(30,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(157,76): warning C4806: '!=': unsafe operation: no value of type 'bool' promoted to type 'unsigned int' can equal the given constant
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(316,41): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\memory(3416,56): warning C4244: 'argument': conversion from '_Ty' to 'float', possible loss of data
+          with
+          [
+              _Ty=double
+          ]
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(66): message : see reference to function template instantiation 'std::unique_ptr<FabrikMesh,std::default_delete<FabrikMesh>> std::make_unique<FabrikMesh,ID3D11Device*,ID3D11DeviceContext*,DirectX::XMFLOAT3,DirectX::XMFLOAT3,int,double,0>(ID3D11Device *&&,ID3D11DeviceContext *&&,DirectX::XMFLOAT3 &&,DirectX::XMFLOAT3 &&,int &&,double &&)' being compiled
+  FabrikMesh.cpp
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(38,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\FabrikMesh.cpp(162,22): warning C4018: '<=': signed/unsigned mismatch
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\FabrikMesh.cpp(180,22): warning C4018: '<': signed/unsigned mismatch
+  LineMesh.cpp
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(38,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.cpp(28,36): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.cpp(73,67): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.cpp(87,59): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.cpp(97,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  Main.cpp
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(38,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
   Generating code
-  3 of 2555 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    17 functions had inline decision re-evaluated but remain unchanged
+  29 of 2556 functions ( 1.1%) were compiled, the rest were copied from previous compilation.
+    6 functions were new in current compilation
+    35 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
 DXFramework.lib(WICTextureLoader.obj) : warning LNK4099: PDB '' was not found with 'DXFramework.lib(WICTextureLoader.obj)' or at ''; linking object as if no debug info
 DXFramework.lib(pch.obj) : warning LNK4099: PDB 'DirectXTK.pdb' was not found with 'DXFramework.lib(pch.obj)' or at 'C:\Github\CMP305\week-5-l-systems-nefastes\x64\Release\DirectXTK.pdb'; linking object as if no debug info

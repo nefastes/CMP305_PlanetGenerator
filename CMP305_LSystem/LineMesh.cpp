@@ -100,14 +100,10 @@ void LineMesh::initBuffers(ID3D11Device* device)
 	device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer);
 }
 
-void LineSegment::follow(XMVECTOR goal)
+void LineSegment::rotateSegment(XMVECTOR& segment, const XMVECTOR& direction)
 {
-	//Compute the two vectors
-	XMVECTOR dir = goal - start;
-	XMVECTOR segment = end - start;
-
 	//Compute the required data for the rotation of the segment
-	XMVECTOR normalized_dir = XMVector3Normalize(dir);
+	XMVECTOR normalized_dir = XMVector3Normalize(direction);
 	XMVECTOR normalized_segment = XMVector3Normalize(segment);
 	XMVECTOR rotation_axis = XMVector3Normalize(XMVector3Cross(normalized_dir, normalized_segment));
 	float rotation_angle = -XMVectorGetX(XMVector3AngleBetweenNormals(normalized_dir, normalized_segment));
@@ -117,16 +113,33 @@ void LineSegment::follow(XMVECTOR goal)
 		XMMATRIX transform = XMMatrixRotationAxis(rotation_axis, rotation_angle);
 		segment = XMVector3Transform(segment, transform);
 	}
+}
 
-	//Update the line components
+void LineSegment::follow(const XMVECTOR& goal)
+{
+	//Compute the two vectors
+	XMVECTOR dir = goal - start;
+	XMVECTOR segment = end - start;
+
+	//Compute the required data for the rotation of the segment
+	rotateSegment(segment, dir);
+
+	//Update the line components (shift to goal position)
 	start = goal - segment;
 	end = goal;
 }
 
-void LineSegment::moveBack(XMVECTOR target)
+void LineSegment::moveBack(const XMVECTOR& start_point)
 {
 	//Need to translate the segment back to target
+	XMVECTOR dir = end - start;	//The original segment will server as the direction once it has been shifted back
+	start = start_point;
+	end = start_point + dir;
 	XMVECTOR segment = end - start;
-	end = target + segment;
-	start = target;
+
+	//Now that the segment has been translated to it's original point, rotate it so that it points towards the next
+	rotateSegment(segment, dir);
+
+	//Assign the end point accordingly
+	end = start + segment;
 }

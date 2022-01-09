@@ -3,19 +3,22 @@
 #include <vector>
 
 class LineSegment {
+private:
+	void rotateSegment(XMVECTOR& segment, const XMVECTOR& direction);
+
 public:
 	LineSegment() {
 		start = XMVectorSet(0, 0, 0, 1); end = XMVectorSet(0, 1, 0, 1);
 	}
-	LineSegment(XMVECTOR s, XMVECTOR e) {
+	LineSegment(const XMVECTOR& s, const XMVECTOR& e) {
 		start = s; end = e;
 	}
 
-	XMVECTOR& getStart() { return start; }
-	XMVECTOR& getEnd() { return end; }
+	const XMVECTOR& getStart() { return start; }
+	const XMVECTOR& getEnd() { return end; }
 
-	void follow(XMVECTOR goal);
-	void moveBack(XMVECTOR target);
+	void follow(const XMVECTOR& goal);
+	void moveBack(const XMVECTOR& start_point);
 	
 	XMVECTOR start;
 	XMVECTOR end;

@@ -832,7 +832,7 @@ void PlanetMesh::GenerateTrees(ID3D11Device* device, ID3D11DeviceContext* device
 		for (unsigned short n = 0u; n < n_trees_per_face_; ++n)
 		{
 			//Generate random tree positions
-			// rand() % n_triangles_per_face to determine which triangle we spawn the tree on a face
+			// rand() % n_triangles_per_face to randomly determine which triangle we spawn the tree on a face
 			// add n_triangles_per_face * face_number to determine which face we operate on
 			// multiply the end result by 3 so that the index represents the location of the first vertex of the triangle
 			int index = 3 * (rand() % n_triangles_per_face + n_triangles_per_face * face_number);
