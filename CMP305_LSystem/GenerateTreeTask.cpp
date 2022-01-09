@@ -50,6 +50,9 @@ void GenerateTreeTask::run()
 	transform = XMMatrixMultiply(transform, XMMatrixRotationAxis(rotation_axis, rotation_angle));
 	//Translate the tree to the vertex's position
 	transform = XMMatrixMultiply(transform, XMMatrixTranslation(XMVectorGetX(position), XMVectorGetY(position), XMVectorGetZ(position)));
+
+	//Lock the three generation, otherwise we get HEAP corruption
 	const std::lock_guard<std::mutex> lock(tree_mutex_);
+	srand(*(unsigned int*)&position);	//Seed the generation of the tree with their position, so that we ensure they are all different
 	trees_->push_back(new Tree(device_, deviceContext_, window_, transform, tree_system_iterations_));
 }

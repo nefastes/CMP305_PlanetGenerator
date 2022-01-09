@@ -16,7 +16,7 @@ App1::App1() :
 	gui_planet_rotation(XMFLOAT3(0.f, 0.f, 0.f)),
 	settings_filename("planet_example_1"),
 	gui_planet_shader_material_thresholds(XMFLOAT4(.75f, .5f, .1f, .01f)),
-	gui_planet_generate_on_input(true)
+	gui_planet_generate_on_input(false)
 {
 }
 

@@ -800,7 +800,7 @@ void PlanetMesh::GenerateNormals()
 
 	//Recalculate normals
 	//Set up normals for the face
-	for (int k = 0; k < vertexCount - 3; k += 3) {
+	for (int k = 0; k < vertexCount; k += 3) {
 		for (int l = 0; l < 3; ++l)
 		{
 			farm.add_task(new GenerateNormalsTask(

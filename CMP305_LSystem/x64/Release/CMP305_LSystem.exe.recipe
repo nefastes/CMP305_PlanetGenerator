@@ -2,27 +2,27 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\CMP305_LSystem.exe</FullPath>
+      <FullPath>C:\Github\CMP305\week-5-l-systems-nefastes\x64\Release\CMP305_LSystem.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\planet_ps.cso</FullPath>
+      <FullPath>C:\Github\CMP305\week-5-l-systems-nefastes\x64\Release\planet_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\planet_vs.cso</FullPath>
+      <FullPath>C:\Github\CMP305\week-5-l-systems-nefastes\x64\Release\planet_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\light_ps.cso</FullPath>
+      <FullPath>C:\Github\CMP305\week-5-l-systems-nefastes\x64\Release\light_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\light_vs.cso</FullPath>
+      <FullPath>C:\Github\CMP305\week-5-l-systems-nefastes\x64\Release\light_vs.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\tree_ps.cso</FullPath>
+      <FullPath>C:\Github\CMP305\week-5-l-systems-nefastes\x64\Release\tree_ps.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\_G4rG4m3l_\Documents\GitHub\CMP305\week-5-l-systems-nefastes\x64\Release\tree_vs.cso</FullPath>
+      <FullPath>C:\Github\CMP305\week-5-l-systems-nefastes\x64\Release\tree_vs.cso</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />
