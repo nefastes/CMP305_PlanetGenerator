@@ -15,7 +15,6 @@ App1::App1() :
 	gui_planet_noise_n_layers(1),
 	gui_planet_rotation(XMFLOAT3(0.f, 0.f, 0.f)),
 	settings_filename("planet_example_1"),
-	gui_planet_shader_material_thresholds(XMFLOAT4(.75f, .5f, .1f, .01f)),
 	gui_planet_generate_on_input(false)
 {
 }
@@ -149,7 +148,7 @@ bool App1::render()
 	//Render the planet
 	worldMatrix = XMMatrixRotationRollPitchYaw(gui_planet_rotation.y, gui_planet_rotation.z, gui_planet_rotation.x);
 	planet_mesh->sendData(renderer->getDeviceContext());
-	planet_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, light.get(), gui_planet_shader_material_thresholds);
+	planet_shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, light.get(), *planet_mesh->getShaderSettings());
 	planet_shader->render(renderer->getDeviceContext(), planet_mesh->getIndexCount());
 
 	//Render the trees of the planet
@@ -289,7 +288,7 @@ void App1::gui()
 			}
 			if (ImGui::Button("Generate Trees Only"))
 			{
-				planet_mesh->GenerateTrees(renderer->getDevice(), renderer->getDeviceContext(), wnd, gui_planet_shader_material_thresholds.z, gui_planet_shader_material_thresholds.y);
+				planet_mesh->GenerateTrees(renderer->getDevice(), renderer->getDeviceContext(), wnd, planet_mesh->getShaderSettings()->z, planet_mesh->getShaderSettings()->y);
 				ImGui::OpenPopup("Generation Trees");
 			}
 		}
@@ -302,11 +301,11 @@ void App1::gui()
 
 		ImGui::Separator();
 		ImGui::Text("Shader Settings:");
-		if (ImGui::Button("Reset Shader")) gui_planet_shader_material_thresholds = XMFLOAT4(.75f, .5f, .1f, .01f);
-		need_trees_generation |= ImGui::DragFloat("Beach", &gui_planet_shader_material_thresholds.w, .001f);
-		need_trees_generation |= ImGui::DragFloat("Grass", &gui_planet_shader_material_thresholds.z, .001f);
-		need_trees_generation |= ImGui::DragFloat("Rock", &gui_planet_shader_material_thresholds.y, .001f);
-		need_trees_generation |= ImGui::DragFloat("Snow", &gui_planet_shader_material_thresholds.x, .001f);
+		if (ImGui::Button("Reset Shader")) *planet_mesh->getShaderSettings() = XMFLOAT4(.75f, .5f, .1f, .01f);
+		need_trees_generation |= ImGui::DragFloat("Beach", &planet_mesh->getShaderSettings()->w, .001f, 0.f, 1.f);
+		need_trees_generation |= ImGui::DragFloat("Grass", &planet_mesh->getShaderSettings()->z, .001f, 0.f, 1.f);
+		need_trees_generation |= ImGui::DragFloat("Rock", &planet_mesh->getShaderSettings()->y, .001f, 0.f, 1.f);
+		need_trees_generation |= ImGui::DragFloat("Snow", &planet_mesh->getShaderSettings()->x, .001f, 0.f, 1.f);
 		
 		ImGui::Separator();
 		ImGui::Text("Layer Settings:");
@@ -357,7 +356,7 @@ void App1::gui()
 		}
 		if (need_trees_generation && gui_planet_generate_on_input)
 		{
-			planet_mesh->GenerateTrees(renderer->getDevice(), renderer->getDeviceContext(), wnd, gui_planet_shader_material_thresholds.z, gui_planet_shader_material_thresholds.y);
+			planet_mesh->GenerateTrees(renderer->getDevice(), renderer->getDeviceContext(), wnd, planet_mesh->getShaderSettings()->z, planet_mesh->getShaderSettings()->y);
 			ImGui::OpenPopup("Generation Trees");
 		}
 		if (ImGui::BeginPopupModal("Generation Vertices", NULL, ImGuiWindowFlags_AlwaysAutoResize))
@@ -388,7 +387,7 @@ void App1::gui()
 			{
 				ImGui::CloseCurrentPopup();
 				ImGui::EndPopup();
-				planet_mesh->GenerateTrees(renderer->getDevice(), renderer->getDeviceContext(), wnd, gui_planet_shader_material_thresholds.z, gui_planet_shader_material_thresholds.y);
+				planet_mesh->GenerateTrees(renderer->getDevice(), renderer->getDeviceContext(), wnd, planet_mesh->getShaderSettings()->z, planet_mesh->getShaderSettings()->y);
 				ImGui::OpenPopup("Generation Trees");
 			}
 		}

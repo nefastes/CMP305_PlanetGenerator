@@ -44,6 +44,7 @@ public:
 	unsigned* getNumberTreesPerFace() { return &n_trees_per_face_; }
 	float* getTreeNormalMaxAngle() { return &tree_max_angle_to_normal_; }
 	unsigned* getTreeSystemIterations() { return &tree_system_n_iterations_; }
+	XMFLOAT4* getShaderSettings() { return &shader_material_thresholds; }
 
 private:
 	void initBuffers(ID3D11Device* device);
@@ -71,5 +72,32 @@ private:
 	unsigned n_trees_per_face_;
 	float tree_max_angle_to_normal_;
 	unsigned tree_system_n_iterations_;
+	//Shader settings
+	XMFLOAT4 shader_material_thresholds;
+
+	struct Export_Settings {
+		Export_Settings() {
+			resolution = 0;
+			tree_scale = 0.f;
+			n_tree_per_face = 0u;
+			tree_max_angle = 0.f;
+			tree_system_n_iterations = 0u;
+			shader = XMFLOAT4(0.f, 0.f, 0.f, 0.f);
+		}
+		Export_Settings(unsigned r, float sc, unsigned t, float m, unsigned i, XMFLOAT4 s) {
+			resolution = r;
+			tree_scale = sc;
+			n_tree_per_face = t;
+			tree_max_angle = m;
+			tree_system_n_iterations = i;
+			shader = s;
+		}
+		unsigned resolution;
+		float tree_scale;
+		unsigned n_tree_per_face;
+		float tree_max_angle;
+		unsigned tree_system_n_iterations;
+		XMFLOAT4 shader;
+	};
 };
 

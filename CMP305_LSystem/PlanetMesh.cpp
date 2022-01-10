@@ -1,8 +1,8 @@
 #include "PlanetMesh.h"
 
 PlanetMesh::PlanetMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, HWND hwnd, unsigned resolution) :
-	resolution_(resolution), radius_(1.f), debug_building_(false), planet_tree_scale_(.075f), n_trees_per_face_(20u),
-	tree_max_angle_to_normal_(10.f), current_task(0u), tree_system_n_iterations_(5u)
+	resolution_(resolution), radius_(1.f), debug_building_(false), planet_tree_scale_(0.f), n_trees_per_face_(0u),
+	tree_max_angle_to_normal_(0.f), current_task(0u), tree_system_n_iterations_(0u), shader_material_thresholds(XMFLOAT4(0.4f, 0.3f, 0.2f, 0.1f))
 {
 	noise_layers_.push_back(std::make_unique<NoiseLayerSettings>());
 	GenerateVertices();
@@ -57,6 +57,8 @@ void PlanetMesh::ExportSettings(const char* filename, const int namesize)
 		//output all the current settings
 		for (unsigned i = 0u; i < n_layers; ++i)
 			file.write((char*)noise_layers_.at(i).get(), sizeof(NoiseLayerSettings));
+		Export_Settings settings(resolution_, planet_tree_scale_, n_trees_per_face_, tree_max_angle_to_normal_, tree_system_n_iterations_, shader_material_thresholds);
+		file.write((char*)&settings, sizeof(Export_Settings));
 
 		//remember to close the file!
 		file.close();
@@ -84,6 +86,14 @@ unsigned PlanetMesh::ImportSettings(ID3D11Device* device, const char* filename, 
 		//output all the current settings
 		for (unsigned i = 0u; i < n_layers; ++i)
 			file.read((char*)noise_layers_.at(i).get(), sizeof(NoiseLayerSettings));
+		Export_Settings settings;
+		file.read((char*)&settings, sizeof(Export_Settings));
+		resolution_ = settings.resolution;
+		planet_tree_scale_ = settings.tree_scale;
+		n_trees_per_face_ = settings.n_tree_per_face;
+		tree_max_angle_to_normal_ = settings.tree_max_angle;
+		tree_system_n_iterations_ = settings.tree_system_n_iterations;
+		shader_material_thresholds = settings.shader;
 
 		//remember to close the file!
 		file.close();

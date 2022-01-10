@@ -36,7 +36,7 @@ void LSystem::Iterate() {
 			float weight = 100.f / static_cast<float>(n_elements);
 			float selection = static_cast<float>(rand() % 100);
 			selection /= weight;
-			assert(selection < 8.f);
+			assert(selection < static_cast<float>(n_elements));
 			for (size_t i = 0u; i < static_cast<size_t>(selection); ++i) ++item;
 		}
 
