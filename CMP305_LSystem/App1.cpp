@@ -292,7 +292,7 @@ void App1::gui()
 				ImGui::OpenPopup("Generation Trees");
 			}
 		}
-		need_vertices_and_normals_generation |= ImGui::SliderInt("Resolution", (int*)planet_mesh->getResolution(), 1, 500);
+		need_vertices_and_normals_generation |= ImGui::SliderInt("Mesh Resolution", (int*)planet_mesh->getResolution(), 1, 500);
 		need_trees_generation |= ImGui::DragFloat("Tree Scale", planet_mesh->getTreeScale(), 0.001f);
 		need_trees_generation |= ImGui::DragInt("N Trees Per Face", (int*)planet_mesh->getNumberTreesPerFace(), 1, 0, 5000);
 		need_trees_generation |= ImGui::DragFloat("Tree Max Angle Surface Normal", planet_mesh->getTreeNormalMaxAngle(), .01f, 0.f, 90.f);
