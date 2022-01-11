@@ -39,16 +39,17 @@ void GenerateTreeTask::run()
 	float vertex_distance = (pos_x * pos_x + pos_y * pos_y + pos_z * pos_z) - 1.f;
 	if (vertex_distance < grass_low_threshold_ || vertex_distance > grass_high_threshold_) return;
 
+	//Check the angle of the surface and make sure it is within the defined threshold
+	XMVECTOR normal = (XMLoadFloat3(&norm_v1_) + XMLoadFloat3(&norm_v2_) + XMLoadFloat3(&norm_v3_)) / 3.f;
+	float surface_angle = XMVectorGetX(XMVector3AngleBetweenNormals(XMVector3Normalize(position), normal));
+	float max_angle = AI_DEG_TO_RAD(tree_max_angle_);
 	//Scale the tree
 	XMMATRIX transform = XMMatrixScaling(tree_scale_, tree_scale_, tree_scale_);
 	//Rotate the tree so that it's up direction is along the surface normal
+	if (surface_angle < -max_angle || surface_angle > max_angle) return;	//Ensure a tree can't be placed on a steep surface
 	XMVECTOR up = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-	XMVECTOR normal = (XMLoadFloat3(&norm_v1_) + XMLoadFloat3(&norm_v2_) + XMLoadFloat3(&norm_v3_)) / 3.f;
 	XMVECTOR rotation_axis = XMVector3Cross(up, normal);
 	float rotation_angle = XMVectorGetX(XMVector3AngleBetweenNormals(up, normal));
-	float surface_angle = XMVectorGetX(XMVector3AngleBetweenNormals(XMVector3Normalize(position), normal));
-	float max_angle = AI_DEG_TO_RAD(tree_max_angle_);
-	if (surface_angle < -max_angle || surface_angle > max_angle) return;	//Ensure a tree can't be placed on a steep surface
 	transform = XMMatrixMultiply(transform, XMMatrixRotationAxis(rotation_axis, rotation_angle));
 	//Translate the tree to the vertex's position
 	transform = XMMatrixMultiply(transform, XMMatrixTranslation(XMVectorGetX(position), XMVectorGetY(position), XMVectorGetZ(position)));
