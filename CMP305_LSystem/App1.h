@@ -57,6 +57,7 @@ private:
 	XMFLOAT3 gui_planet_rotation;
 	char settings_filename[64];
 	bool gui_planet_generate_on_input;
+	bool gui_animate_planet_rotation;
 };
 
 #endif

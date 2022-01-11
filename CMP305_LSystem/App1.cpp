@@ -15,7 +15,8 @@ App1::App1() :
 	gui_planet_noise_n_layers(1),
 	gui_planet_rotation(XMFLOAT3(0.f, 0.f, 0.f)),
 	settings_filename("planet_example_1"),
-	gui_planet_generate_on_input(false)
+	gui_planet_generate_on_input(false),
+	gui_animate_planet_rotation(false)
 {
 }
 
@@ -120,6 +121,9 @@ bool App1::frame()
 	//Build the mesh again (TODO: could this be avoided?)
 	if(fabrik_render_cylinders) fabrik_mesh->BuildCylinders(renderer->getDevice(), renderer->getDeviceContext());
 	else fabrik_mesh->BuildLine(renderer->getDeviceContext(), renderer->getDevice());
+
+	//planet display animation
+	if (gui_animate_planet_rotation) gui_planet_rotation.z += .25f * frame_time;
 
 	// Render the graphics.
 	result = render();
@@ -298,6 +302,7 @@ void App1::gui()
 		need_trees_generation |= ImGui::DragFloat("Tree Max Angle Surface Normal", planet_mesh->getTreeNormalMaxAngle(), .01f, 0.f, 90.f);
 		need_trees_generation |= ImGui::SliderInt("N Iterations System", (int*)planet_mesh->getTreeSystemIterations(), 1, 20);
 		ImGui::DragFloat3("Roll Pitch Yaw", &gui_planet_rotation.x, .01f);
+		ImGui::Checkbox("Animate Roation Yaw", &gui_animate_planet_rotation);
 
 		ImGui::Separator();
 		ImGui::Text("Shader Settings:");
