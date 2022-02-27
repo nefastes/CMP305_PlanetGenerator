@@ -160,14 +160,6 @@ bool App1::render()
 	for (unsigned i = 0u; i < trees->size() && planet_mesh->isGenerating() != 3u; ++i)
 	{
 		Tree* current = trees->at(i);
-		if (current == NULL || current == (Tree*)0xcdcdcdcdcdcdcdcd || current == (Tree*)0xdddddddddddddddd || current == (Tree*)0xddddddddfdfdfdfd)
-		{
-			//Very aweful fix for the memory corruption!! DO NOT REUSE!!
-			//This may prevent the program from crashing, but it doesn't deallocate the corrupted objects from memory!
-			//Need to research more into this, however this is sadly not the focus of this work.
-			trees->at(i) = NULL;
-			continue;
-		}
 		current->render(
 			renderer->getDeviceContext(),
 			worldMatrix,
