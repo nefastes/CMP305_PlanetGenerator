@@ -1,23 +1,64 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(513,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (CMP305_Base.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  compilation object save succeeded; see C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\planet_ps.cso
+  compilation object save succeeded; see C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\planet_vs.cso
+  compilation object save succeeded; see C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\light_ps.cso
+  compilation object save succeeded; see C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\light_vs.cso
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\tree_ps.hlsl(1,9-12): warning X3568: 'once' : unknown pragma ignored
+  
+  compilation object save succeeded; see C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\tree_ps.cso
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\tree_vs.hlsl(1,9-12): warning X3568: 'once' : unknown pragma ignored
+  
+  compilation object save succeeded; see C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\tree_vs.cso
   App1.cpp
 C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(38,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
-C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(29,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(156,76): warning C4806: '!=': unsafe operation: no value of type 'bool' promoted to type 'unsigned int' can equal the given constant
-C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(315,41): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(30,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(160,76): warning C4806: '!=': unsafe operation: no value of type 'bool' promoted to type 'unsigned int' can equal the given constant
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(320,41): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\memory(3416,56): warning C4244: 'argument': conversion from '_Ty' to 'float', possible loss of data
           with
           [
               _Ty=double
           ]
-C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(65): message : see reference to function template instantiation 'std::unique_ptr<FabrikMesh,std::default_delete<FabrikMesh>> std::make_unique<FabrikMesh,ID3D11Device*,ID3D11DeviceContext*,DirectX::XMFLOAT3,DirectX::XMFLOAT3,int,double,0>(ID3D11Device *&&,ID3D11DeviceContext *&&,DirectX::XMFLOAT3 &&,DirectX::XMFLOAT3 &&,int &&,double &&)' being compiled
-  LSystem.cpp
-  Main.cpp
-C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(38,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\App1.cpp(66): message : see reference to function template instantiation 'std::unique_ptr<FabrikMesh,std::default_delete<FabrikMesh>> std::make_unique<FabrikMesh,ID3D11Device*,ID3D11DeviceContext*,DirectX::XMFLOAT3,DirectX::XMFLOAT3,int,double,0>(ID3D11Device *&&,ID3D11DeviceContext *&&,DirectX::XMFLOAT3 &&,DirectX::XMFLOAT3 &&,int &&,double &&)' being compiled
+  farm.cpp
+  GenerateMeshTask.cpp
+  GenerateNormalsTask.cpp
+  GenerateTreeTask.cpp
   PlanetMesh.cpp
 C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.cpp(54,43): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
 C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.cpp(83,3): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
 C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.cpp(84,3): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+  CylinderMesh.cpp
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\CylinderMesh.cpp(39,22): warning C4018: '<=': signed/unsigned mismatch
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\CylinderMesh.cpp(55,22): warning C4018: '<': signed/unsigned mismatch
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\CylinderMesh.cpp(70,67): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\CylinderMesh.cpp(84,68): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\CylinderMesh.cpp(96,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\CylinderMesh.cpp(97,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  FabrikMesh.cpp
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(38,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\FabrikMesh.cpp(162,22): warning C4018: '<=': signed/unsigned mismatch
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\FabrikMesh.cpp(180,22): warning C4018: '<': signed/unsigned mismatch
+  Leaf.cpp
+  LightShader.cpp
+  LineMesh.cpp
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(38,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.cpp(28,36): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.cpp(73,67): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.cpp(87,59): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.cpp(97,29): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  LSystem.cpp
+  Main.cpp
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\LineMesh.h(38,35): warning C4267: 'return': conversion from 'size_t' to 'const int', possible loss of data
+  PlanetShader.cpp
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetShader.cpp(84,21): warning C4101: 'samplerDesc': unreferenced local variable
+  RegenerateTreeSystemTask.cpp
+  Tree.cpp
+  TreeShader.cpp
+C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\TreeShader.cpp(78,21): warning C4101: 'samplerDesc': unreferenced local variable
   Generating Code...
 C:\Github\CMP305\week-5-l-systems-nefastes\CMP305_LSystem\PlanetMesh.h(33): warning C4172: returning address of local variable or temporary
+DXFramework.lib(WICTextureLoader.obj) : warning LNK4099: PDB 'DirectXTK.pdb' was not found with 'DXFramework.lib(WICTextureLoader.obj)' or at 'C:\Github\CMP305\week-5-l-systems-nefastes\x64\Debug\DirectXTK.pdb'; linking object as if no debug info
+DXFramework.lib(pch.obj) : warning LNK4099: PDB 'DirectXTK.pdb' was not found with 'DXFramework.lib(pch.obj)' or at 'C:\Github\CMP305\week-5-l-systems-nefastes\x64\Debug\DirectXTK.pdb'; linking object as if no debug info
 DXFramework.lib(DDSTextureLoader.obj) : warning LNK4099: PDB 'DirectXTK.pdb' was not found with 'DXFramework.lib(DDSTextureLoader.obj)' or at 'C:\Github\CMP305\week-5-l-systems-nefastes\x64\Debug\DirectXTK.pdb'; linking object as if no debug info
   CMP305_LSystem.vcxproj -> C:\Github\CMP305\week-5-l-systems-nefastes\x64\Debug\CMP305_LSystem.exe

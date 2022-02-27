@@ -1,10 +1,1 @@
-﻿  GenerateTreeTask.cpp
-  Generating code
-  1 of 2559 functions (<0.1%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    18 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-DXFramework.lib(WICTextureLoader.obj) : warning LNK4099: PDB '' was not found with 'DXFramework.lib(WICTextureLoader.obj)' or at ''; linking object as if no debug info
-DXFramework.lib(pch.obj) : warning LNK4099: PDB 'DirectXTK.pdb' was not found with 'DXFramework.lib(pch.obj)' or at 'C:\Github\CMP305\week-5-l-systems-nefastes\x64\Release\DirectXTK.pdb'; linking object as if no debug info
-DXFramework.lib(DDSTextureLoader.obj) : warning LNK4099: PDB '' was not found with 'DXFramework.lib(DDSTextureLoader.obj)' or at ''; linking object as if no debug info
-  CMP305_LSystem.vcxproj -> C:\Github\CMP305\week-5-l-systems-nefastes\x64\Release\CMP305_LSystem.exe
+﻿  CMP305_LSystem.vcxproj -> C:\Github\CMP305\week-5-l-systems-nefastes\x64\Release\CMP305_LSystem.exe
